@@ -1,4 +1,4 @@
-// ----- PROMPTS FOR UNITS 1,2,3,4,5,6,8 -----
+// ===== PROMPTS FOR UNITS 1,2,3,4,5,6,8 =====
 const PROMPTS = {
   animals: [
     "Describe a wild animal you find fascinating. Explain its habitat and one adaptation.",
@@ -37,7 +37,7 @@ const PROMPTS = {
   ]
 };
 
-// DOM refs
+// ===== DOM REFS =====
 const topicSel     = document.getElementById("topic");
 const nextBtn      = document.getElementById("nextPrompt");
 const promptBox    = document.getElementById("prompt");
@@ -57,7 +57,19 @@ const metaBox      = document.getElementById("meta");
 const copyBtn      = document.getElementById("copyData");
 const submitBtn    = document.getElementById("submit");
 
-// Prompt logic
+// ===== MIC-HELP BANNER HANDLERS =====
+function showMicHelp(){ 
+  const el = document.getElementById("mic-help");
+  if (el) el.style.display = "block";
+}
+function hideMicHelp(){ 
+  const el = document.getElementById("mic-help");
+  if (el) el.style.display = "none";
+}
+const micHelpCloseBtn = document.getElementById("mic-help-close");
+if (micHelpCloseBtn) micHelpCloseBtn.onclick = hideMicHelp;
+
+// ===== PROMPT LOGIC =====
 let promptIndex = -1;
 function showNextPrompt() {
   const list = PROMPTS[topicSel.value];
@@ -70,12 +82,12 @@ function showNextPrompt() {
 }
 nextBtn.addEventListener("click", showNextPrompt);
 
-// Recorder
+// ===== RECORDER (MediaRecorder) =====
 let mediaRecorder;
 let chunks = [];
 let t0 = 0;
 let tick = null;
-let lastPayload = null; // data snapshot for copy/submit
+let lastPayload = null; // snapshot for copy/submit
 
 function fmt(sec) {
   const m = Math.floor(sec / 60).toString().padStart(2,"0");
@@ -98,6 +110,15 @@ function stopTimer() {
 }
 
 async function setupMic() {
+  // Show help immediately if already denied (where supported)
+  if (navigator.permissions && navigator.permissions.query) {
+    try {
+      const p = await navigator.permissions.query({ name: "microphone" });
+      if (p.state === "denied") showMicHelp();
+      p.onchange = () => { if (p.state === "denied") showMicHelp(); else hideMicHelp(); };
+    } catch {}
+  }
+
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     statusEl.textContent = "This browser cannot record audio here.";
     recordBtn.disabled = true;
@@ -136,7 +157,6 @@ async function setupMic() {
       recordBtn.disabled = false;
       stopBtn.disabled = true;
 
-      // Build metadata snapshot
       const payload = {
         name:  nameInput.value.trim(),
         id:    idInput.value.trim(),
@@ -149,7 +169,7 @@ async function setupMic() {
       lastPayload = payload;
       metaBox.textContent = JSON.stringify(payload, null, 2);
       copyBtn.disabled = false;
-      submitBtn.disabled = false; // we’ll wire this to Google Sheets next
+      submitBtn.disabled = false;
     };
 
     statusEl.textContent = "Mic ready. Tap Start Recording.";
@@ -162,6 +182,7 @@ async function setupMic() {
     statusEl.textContent = "Mic error: " + err.message;
     recordBtn.disabled = true;
     stopBtn.disabled   = true;
+    if (err.name === "NotAllowedError" || err.name === "SecurityError") showMicHelp();
   }
 }
 
@@ -172,13 +193,13 @@ copyBtn.addEventListener("click", async () => {
     copyBtn.textContent = "Copied ✔";
     setTimeout(() => (copyBtn.textContent = "📋 Copy data"), 1500);
   } catch {
-    alert("Copy failed. Select the text in the box and copy manually.");
+    alert("Copy failed. Select the text and copy manually.");
   }
 });
 
-// Placeholder: we’ll connect this to Make.com → Google Sheet next
+// Placeholder for next step (Make.com → Google Sheets)
 submitBtn.addEventListener("click", () => {
-  alert("Submit is ready to connect to Google Sheets. We’ll wire this next.");
+  alert("Submit will send data to Google Sheets (we’ll connect this next).");
 });
 
 setupMic();
