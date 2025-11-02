@@ -5,22 +5,41 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Speaking App – Prompts + Recorder</title>
   <style>
-    body{font-family:Arial,system-ui;padding:20px;max-width:860px;margin:auto;line-height:1.5}
+    body{font-family:Arial,system-ui;padding:20px;max-width:860px;margin:auto;line-height:1.5;background:#f8fafc}
     h1{margin:12px 0 8px}
-    .card{border:1px solid #ddd;border-radius:10px;padding:16px;margin:16px 0;background:#fff}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:16px 0}
     .row{display:flex;gap:12px;flex-wrap:wrap}
     label{display:flex;flex-direction:column;font-size:.95rem;gap:6px}
-    input,select{padding:8px 10px;border:1px solid #bbb;border-radius:8px;min-width:220px}
-    button{padding:10px 14px;border-radius:8px;border:1px solid #bbb;background:#fff;cursor:pointer}
+    input,select{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:220px;background:#fff}
+    button{padding:10px 14px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
     button:disabled{opacity:.5;cursor:not-allowed}
-    #prompt{font-size:1.05rem;background:#fafafa;padding:12px;border-radius:8px;border:1px dashed #ccc}
+    #prompt{font-size:1.05rem;background:#f8fafc;padding:12px;border-radius:8px;border:1px dashed #cbd5e1}
     #download{display:none}
-    #meta{font-family:ui-monospace,Consolas,monospace;background:#f7f7f7;border:1px solid #e5e5e5;border-radius:8px;padding:10px;white-space:pre-wrap}
-    small{opacity:.7}
+    #meta{font-family:ui-monospace,Consolas,monospace;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px;white-space:pre-wrap}
+    small{opacity:.75}
+
+    /* Top mic-help banner */
+    #mic-help{
+      display:none;background:#fff8e1;border:1px solid #facc15;color:#713f12;
+      border-radius:10px;padding:12px;margin:16px 0
+    }
+    #mic-help b{color:#92400e}
+    #mic-help button{margin-top:6px;padding:6px 10px;border:1px solid #d4a017;border-radius:8px;background:#fff3cd;cursor:pointer}
   </style>
 </head>
 <body>
-  <h1>Speaking App – Mic Test with Prompts</h1>
+  <h1>Speaking App – Prompts + Recorder</h1>
+
+  <!-- Mic permission help (top banner) -->
+  <div id="mic-help">
+    <strong>🔊 Microphone is blocked.</strong> Please enable it and reload:
+    <ul style="margin:8px 0 0 18px">
+      <li><b>Android (Chrome):</b> tap the 🔒 in the address bar → Permissions → Microphone → Allow → refresh.</li>
+      <li><b>iPhone (Safari):</b> Settings → Safari → Microphone → Allow → reload.</li>
+      <li><b>Laptop (Chrome):</b> click the blocked mic icon → Always allow → refresh.</li>
+    </ul>
+    <button id="mic-help-close">Got it</button>
+  </div>
 
   <!-- 0) Student details -->
   <div class="card">
@@ -68,16 +87,14 @@
       <button id="stop" disabled>■ Stop</button>
     </div>
     <audio id="player" controls style="width:100%;margin-top:10px;"></audio>
-    <p>
-      <a id="download" href="#">⬇️ Download recording</a>
-    </p>
+    <p><a id="download" href="#">⬇️ Download recording</a></p>
     <small>Tip: If the microphone prompt doesn’t appear, refresh and click “Allow”. On iPhone, use Safari.</small>
   </div>
 
-  <!-- 3) Metadata preview and (for now) Copy -->
+  <!-- 3) Metadata preview -->
   <div class="card">
     <h3>3) Recording data</h3>
-    <p>This is what will be sent to the teacher (we’ll connect it to Google Sheets next):</p>
+    <p>This is what will be sent to the teacher (we’ll connect to Google Sheets next):</p>
     <div id="meta">(record something to generate data)</div>
     <div class="row" style="margin-top:10px">
       <button id="copyData" disabled>📋 Copy data</button>
@@ -85,7 +102,7 @@
     </div>
   </div>
 
-  <script src="script.js?v=3"></script>
+  <!-- version bump to avoid cache -->
+  <script src="script.js?v=5"></script>
 </body>
 </html>
-
