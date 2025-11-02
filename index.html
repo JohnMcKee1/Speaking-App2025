@@ -1,61 +1,28 @@
-// Simple in-browser recorder (MediaRecorder)
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Speaking App Test Page</title>
+</head>
 
-const recordBtn = document.getElementById("record");
-const stopBtn = document.getElementById("stop");
-const statusEl = document.getElementById("status");
-const player = document.getElementById("player");
-const downloadLink = document.getElementById("download");
+<body style="font-family:Arial; padding:20px; max-width:720px; margin:auto;">
 
-let mediaRecorder;
-let chunks = [];
+  <h1>Speaking App – Mic Test</h1>
 
-async function setupMic() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    statusEl.textContent = "This browser cannot record audio here.";
-    recordBtn.disabled = true;
-    stopBtn.disabled = true;
-    return;
-  }
+  <p id="status">Loading…</p>
 
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+  <p>
+    <button id="record" disabled>🎙️ Start Recording</button>
+    <button id="stop" disabled>■ Stop</button>
+  </p>
 
-    mediaRecorder.onstart = () => {
-      chunks = [];
-      statusEl.textContent = "Recording…";
-      recordBtn.disabled = true;
-      stopBtn.disabled = false;
-      downloadLink.style.display = "none";
-    };
+  <audio id="player" controls style="width:100%;"></audio>
+  <p><a id="download" href="#" style="display:none">⬇️ Download recording</a></p>
 
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) chunks.push(e.data);
-    };
+  <p style="opacity:.7;font-size:.9em;">Tip: If the microphone prompt does not appear, refresh the page and click "Allow".</p>
 
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "audio/webm" });
-      const url = URL.createObjectURL(blob);
-      player.src = url;
-      downloadLink.href = url;
-      downloadLink.download = "recording.webm";
-      downloadLink.style.display = "inline-block";
-      statusEl.textContent = "Recorded. Play or download below.";
-      recordBtn.disabled = false;
-      stopBtn.disabled = true;
-    };
+  <script src="script.js"></script>
+</body>
 
-    statusEl.textContent = "Mic ready. Tap Start Recording.";
-    recordBtn.disabled = false;
-    stopBtn.disabled = true;
-
-    recordBtn.onclick = () => mediaRecorder.start();
-    stopBtn.onclick = () => mediaRecorder.stop();
-  } catch (err) {
-    statusEl.textContent = "Mic error: " + err.message;
-    recordBtn.disabled = true;
-    stopBtn.disabled = true;
-  }
-}
-
-setupMic();
+</html>
