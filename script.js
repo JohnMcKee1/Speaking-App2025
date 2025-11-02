@@ -37,10 +37,27 @@ const PROMPTS = {
   ]
 };
 
-const topicSel   = document.getElementById("topic");
-const nextBtn    = document.getElementById("nextPrompt");
-const promptBox  = document.getElementById("prompt");
+// DOM refs
+const topicSel     = document.getElementById("topic");
+const nextBtn      = document.getElementById("nextPrompt");
+const promptBox    = document.getElementById("prompt");
 
+const nameInput    = document.getElementById("studentName");
+const idInput      = document.getElementById("studentId");
+const classInput   = document.getElementById("studentClass");
+
+const recordBtn    = document.getElementById("record");
+const stopBtn      = document.getElementById("stop");
+const statusEl     = document.getElementById("status");
+const timerEl      = document.getElementById("timer");
+const player       = document.getElementById("player");
+const downloadLink = document.getElementById("download");
+
+const metaBox      = document.getElementById("meta");
+const copyBtn      = document.getElementById("copyData");
+const submitBtn    = document.getElementById("submit");
+
+// Prompt logic
 let promptIndex = -1;
 function showNextPrompt() {
   const list = PROMPTS[topicSel.value];
@@ -53,15 +70,32 @@ function showNextPrompt() {
 }
 nextBtn.addEventListener("click", showNextPrompt);
 
-// ----- RECORDER (MediaRecorder API) -----
-const recordBtn    = document.getElementById("record");
-const stopBtn      = document.getElementById("stop");
-const statusEl     = document.getElementById("status");
-const player       = document.getElementById("player");
-const downloadLink = document.getElementById("download");
-
+// Recorder
 let mediaRecorder;
 let chunks = [];
+let t0 = 0;
+let tick = null;
+let lastPayload = null; // data snapshot for copy/submit
+
+function fmt(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2,"0");
+  const s = Math.floor(sec % 60).toString().padStart(2,"0");
+  return `${m}:${s}`;
+}
+
+function startTimer() {
+  t0 = Date.now();
+  timerEl.textContent = "00:00";
+  tick = setInterval(() => {
+    const el = (Date.now() - t0) / 1000;
+    timerEl.textContent = fmt(el);
+  }, 250);
+}
+function stopTimer() {
+  if (tick) clearInterval(tick);
+  const el = (Date.now() - t0) / 1000;
+  return Math.round(el);
+}
 
 async function setupMic() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -81,6 +115,9 @@ async function setupMic() {
       recordBtn.disabled = true;
       stopBtn.disabled = false;
       downloadLink.style.display = "none";
+      copyBtn.disabled = true;
+      submitBtn.disabled = true;
+      startTimer();
     };
 
     mediaRecorder.ondataavailable = (e) => {
@@ -88,6 +125,7 @@ async function setupMic() {
     };
 
     mediaRecorder.onstop = () => {
+      const durationSec = stopTimer();
       const blob = new Blob(chunks, { type: "audio/webm" });
       const url = URL.createObjectURL(blob);
       player.src = url;
@@ -97,6 +135,21 @@ async function setupMic() {
       statusEl.textContent = "Recorded. Play or download below.";
       recordBtn.disabled = false;
       stopBtn.disabled = true;
+
+      // Build metadata snapshot
+      const payload = {
+        name:  nameInput.value.trim(),
+        id:    idInput.value.trim(),
+        klass: classInput.value.trim(),
+        unit:  topicSel.value,
+        prompt: promptBox.textContent.trim(),
+        timestamp_iso: new Date().toISOString(),
+        duration_sec: durationSec
+      };
+      lastPayload = payload;
+      metaBox.textContent = JSON.stringify(payload, null, 2);
+      copyBtn.disabled = false;
+      submitBtn.disabled = false; // we’ll wire this to Google Sheets next
     };
 
     statusEl.textContent = "Mic ready. Tap Start Recording.";
@@ -111,4 +164,21 @@ async function setupMic() {
     stopBtn.disabled   = true;
   }
 }
+
+copyBtn.addEventListener("click", async () => {
+  if (!lastPayload) return;
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(lastPayload));
+    copyBtn.textContent = "Copied ✔";
+    setTimeout(() => (copyBtn.textContent = "📋 Copy data"), 1500);
+  } catch {
+    alert("Copy failed. Select the text in the box and copy manually.");
+  }
+});
+
+// Placeholder: we’ll connect this to Make.com → Google Sheet next
+submitBtn.addEventListener("click", () => {
+  alert("Submit is ready to connect to Google Sheets. We’ll wire this next.");
+});
+
 setupMic();
