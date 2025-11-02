@@ -21,25 +21,24 @@ const topicSel   = document.getElementById("topic");
 const nextBtn    = document.getElementById("nextPrompt");
 const promptBox  = document.getElementById("prompt");
 
-let promptIndex = 0;
+let promptIndex = -1;
 function showNextPrompt() {
   const list = PROMPTS[topicSel.value];
-  if (!list || list.length === 0) {
+  if (!list || !list.length) {
     promptBox.textContent = "No prompts available.";
     return;
   }
   promptIndex = (promptIndex + 1) % list.length;
   promptBox.textContent = list[promptIndex];
 }
-
 nextBtn.addEventListener("click", showNextPrompt);
 
 // ----- RECORDER (MediaRecorder API) -----
-const recordBtn   = document.getElementById("record");
-const stopBtn     = document.getElementById("stop");
-const statusEl    = document.getElementById("status");
-const player      = document.getElementById("player");
-const downloadLink= document.getElementById("download");
+const recordBtn    = document.getElementById("record");
+const stopBtn      = document.getElementById("stop");
+const statusEl     = document.getElementById("status");
+const player       = document.getElementById("player");
+const downloadLink = document.getElementById("download");
 
 let mediaRecorder;
 let chunks = [];
@@ -92,6 +91,7 @@ async function setupMic() {
     stopBtn.disabled   = true;
   }
 }
+setupMic();
 
 setupMic();
 
