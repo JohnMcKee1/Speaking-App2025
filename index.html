@@ -1,120 +1,79 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Speaking App – Prompts + Recorder (v1)</title>
-  <style>
-    :root { --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --brand:#2563eb; --ok:#16a34a; --warn:#d97706; --err:#dc2626; }
-    body { font-family: system-ui, Arial, sans-serif; background: var(--bg); color: var(--ink); margin:0; }
-    .wrap { max-width: 860px; margin: 24px auto; padding: 0 16px; }
-    h1 { margin: 12px 0 16px; font-size: 1.4rem;}
-    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 12px 0; }
-    label { display:block; font-size:.95rem; color: var(--muted); margin-bottom:6px;}
-    input, select, textarea { width: 100%; box-sizing: border-box; padding: 10px; border:1px solid #cbd5e1; border-radius: 10px; margin-bottom: 12px; font: inherit; }
-    textarea { min-height: 80px; }
-    .row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
-    .row3 { display: grid; gap: 12px; grid-template-columns: 1fr 1fr 1fr; }
-    button { appearance:none; border:none; background: var(--brand); color:#fff; padding:10px 14px; border-radius: 10px; font-weight:600; cursor:pointer; }
-    button.secondary { background:#e2e8f0; color:#0f172a; }
-    button:disabled { opacity:.5; cursor:not-allowed; }
-    .pill { display:inline-block; padding:4px 8px; border-radius:999px; background:#e2e8f0; color:#0f172a; font-size:.85rem; }
-    .ok { color: var(--ok); }
-    .warn { color: var(--warn); }
-    .err { color: var(--err); }
-    small { color: var(--muted); }
-    .footer { text-align:center; color:var(--muted); margin-top:16px; font-size:.85rem; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Speaking Coach — Units 1–8 (no 7)</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Speaking App · Prompts + Recorder <span class="pill">v1</span></h1>
+  <header>
+    <h1>AI Speaking Coach</h1>
+    <p class="sub">Units 1–8 (excluding 7) • Easy / Medium / Hard • Instant two-line feedback</p>
+  </header>
 
-    <div class="card">
-      <div class="row">
-        <div>
-          <label>Your name (optional)</label>
-          <input id="name" placeholder="e.g., Ahmed S." />
-        </div>
-        <div>
-          <label>Group/Class (optional)</label>
-          <input id="group" placeholder="e.g., E4-403" />
-        </div>
+  <main>
+    <section class="controls">
+      <div class="control">
+        <label for="unitSelect">Unit</label>
+        <select id="unitSelect"></select>
       </div>
-
-      <div class="row3">
-        <div>
-          <label>Scaffold level</label>
-          <select id="scaffold">
-            <option value="Medium" selected>Medium (default)</option>
-            <option value="Low">Low</option>
-            <option value="High">High</option>
-          </select>
-        </div>
-        <div>
-          <label>Grammar target</label>
-          <select id="grammar">
-            <option value="comparatives">Comparatives</option>
-            <option value="contrast">Contrasting ideas</option>
-            <option value="modals">Modals (obligation/advice)</option>
-            <option value="signposting">Signposting</option>
-            <option value="first_conditional">First conditional</option>
-          </select>
-        </div>
-        <div>
-          <label>Vocab set</label>
-          <select id="vocab">
-            <option value="health_fitness">Unit 5 – Health & Fitness</option>
-            <option value="discovery_invention">Unit 6 – Discovery & Invention</option>
-            <option value="economics">Unit 8 – Economics</option>
-          </select>
-        </div>
+      <div class="control">
+        <label for="levelSelect">Level</label>
+        <select id="levelSelect">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
       </div>
-
-      <label>Prompt</label>
-      <select id="prompt">
-        <option value="p1">Describe a healthy daily routine using at least two signposting phrases.</option>
-        <option value="p2">Compare two inventions and explain which has had a greater impact.</option>
-        <option value="p3">Give advice to a friend who wants to save money and get fit.</option>
-      </select>
-      <small id="promptText"></small>
-    </div>
-
-    <div class="card">
-      <label>Recorder</label>
-      <div class="row">
-        <div>
-          <button id="startBtn">🎙️ Start</button>
-          <button id="stopBtn" class="secondary" disabled>⏹️ Stop</button>
-        </div>
-        <div style="align-self:center">
-          <strong id="timer">00:00</strong> <small>(max ~2 min recommended)</small>
-        </div>
+      <div class="control">
+        <button id="loadPromptBtn">Load Prompt</button>
       </div>
-      <audio id="player" controls></audio>
-      <div class="row">
-        <div>
-          <label>Self rating (1–5)</label>
-          <select id="rating">
-            <option value="">—</option>
-            <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
-          </select>
-        </div>
-        <div>
-          <label>Notes (optional)</label>
-          <input id="notes" placeholder="e.g., struggled with /ɪ/ sound" />
-        </div>
+    </section>
+
+    <section class="prompt-card">
+      <h2 id="promptTitle">Prompt</h2>
+      <p id="promptText" class="prompt-text">Choose a unit and level, then click “Load Prompt”.</p>
+      <div id="targetsBox" class="targets"></div>
+    </section>
+
+    <section class="response-card">
+      <h3>Your response</h3>
+      <textarea id="responseInput" rows="8" placeholder="Type (or paste a transcript) here..."></textarea>
+      <div class="actions">
+        <button id="submitBtn">Submit</button>
+        <button id="clearBtn" class="ghost">Clear</button>
       </div>
-      <button id="submitBtn" disabled>Submit to Teacher</button>
-      <div id="status"></div>
-    </div>
+    </section>
 
-    <div class="footer">
-      <small>This prototype sends metadata to Google Sheets via Make.com. Audio upload will be added later.</small>
-    </div>
-  </div>
+    <section id="feedback" class="feedback hidden">
+      <h3>Feedback</h3>
+      <p class="fb-line"><strong>What you did well:</strong> <span id="fbGood"></span></p>
+      <p class="fb-line"><strong>Next step:</strong> <span id="fbNext"></span></p>
+      <div class="meta">
+        <span id="fbCefr" class="tag"></span>
+        <span id="fbStats" class="tag"></span>
+      </div>
+    </section>
 
-  <script src="script.js"></script>
+    <section class="help">
+      <details>
+        <summary>How this feedback works</summary>
+        <ul>
+          <li>Checks <em>length & clarity</em>, <em>topic keywords</em>, and <em>target language</em> (e.g., first conditional, signposting).</li>
+          <li>Outputs two short sentences your students can act on in 30–45 seconds.</li>
+          <li>Shows a light “CEFR-ish” focus tag (for classroom guidance only).</li>
+        </ul>
+      </details>
+    </section>
+  </main>
+
+  <footer>
+    <small>Static prototype. No data leaves this page.</small>
+  </footer>
+
+  <script src="prompts.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
 
