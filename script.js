@@ -144,3 +144,290 @@ const PROMPTS = {
       ]
     }
   },
+  "8": { title: "Economics",
+    targets: ["advantages & disadvantages","signposting","cause & effect"],
+    keywords: ["cost","benefit","market","policy","inflation","employment"],
+    prompts: {
+      easy: [
+        { text: "Give one advantage and one disadvantage of part-time work for students.",
+          targets: ["advantages & disadvantages"], minWords: 40 },
+        { text: "Explain one cause and one effect of rising prices in your area.",
+          targets: ["cause & effect"], minWords: 40 }
+      ],
+      medium: [
+        { text: "Compare two ways to save money for college students and recommend one.",
+          targets: ["comparatives","recommendations"], minWords: 60 },
+        { text: "Discuss a local policy idea and signpost your main points clearly.",
+          targets: ["signposting","advantages & disadvantages"], minWords: 60 }
+      ],
+      hard: [
+        { text: "Evaluate whether a minimum wage increase would help students. Use contrasts and cause & effect.",
+          targets: ["contrasting ideas","cause & effect","signposting"], minWords: 80 },
+        { text: "Argue for or against subsidized transport for learners. Provide pros/cons and a recommendation.",
+          targets: ["advantages & disadvantages","recommendations","signposting"], minWords: 80 }
+      ]
+    }
+  }
+};
+
+/***** ELEMENTS *****/
+const micHelp = document.getElementById('micHelp');
+
+const studentName = document.getElementById('studentName');
+const studentId   = document.getElementById('studentId');
+const studentGroup= document.getElementById('studentGroup');
+
+const unitSelect  = document.getElementById('unitSelect');
+const levelSelect = document.getElementById('levelSelect');
+const loadPromptBtn = document.getElementById('loadPromptBtn');
+const promptTitle = document.getElementById('promptTitle');
+const promptText  = document.getElementById('promptText');
+const targetsBox  = document.getElementById('targetsBox');
+
+const recBtn   = document.getElementById('recBtn');
+const stopBtn  = document.getElementById('stopBtn');
+const playBtn  = document.getElementById('playBtn');
+const player   = document.getElementById('player');
+const dlLink   = document.getElementById('dlLink');
+const meterFill= document.getElementById('meterFill');
+const recStatus= document.getElementById('recStatus');
+const timerEl  = document.getElementById('timer');
+
+const feedback = document.getElementById('feedback');
+const fbGood = document.getElementById('fbGood');
+const fbNext = document.getElementById('fbNext');
+const fbCefr = document.getElementById('fbCefr');
+const fbStats= document.getElementById('fbStats');
+
+const getFbBtn = document.getElementById('getFbBtn');
+const submitBtn= document.getElementById('submitBtn');
+const clearBtn = document.getElementById('clearBtn');
+const attemptPreview = document.getElementById('attemptPreview');
+const copyBtn = document.getElementById('copyBtn');
+
+/***** STATE *****/
+let currentPrompt = null;
+let mediaStream = null, mediaRecorder = null, audioChunks = [];
+let analyser = null, audioCtx = null, rafId = null;
+let startTs = 0, timerId = null;
+let audioBlob = null;
+
+/***** INIT *****/
+(function init(){
+  Object.keys(PROMPTS).forEach(u=>{
+    const opt=document.createElement('option');
+    opt.value=u; opt.textContent=`Unit ${u} — ${PROMPTS[u].title}`;
+    unitSelect.appendChild(opt);
+  });
+  unitSelect.value="1";
+  levelSelect.value="medium";
+})();
+
+/***** PROMPTS *****/
+loadPromptBtn.addEventListener('click', () => {
+  const u = unitSelect.value, lvl = levelSelect.value;
+  const set = PROMPTS[u];
+  const arr = set.prompts[lvl];
+  const key = `U${u}-${lvl}-idx`;
+  const last = Number(localStorage.getItem(key) || -1);
+  const idx = (last + 1) % arr.length;
+  localStorage.setItem(key, String(idx));
+  currentPrompt = arr[idx];
+
+  promptTitle.textContent = `${set.title} • ${cap(lvl)}`;
+  promptText.textContent = currentPrompt.text;
+  targetsBox.innerHTML = "";
+  const tags = new Set([...(set.targets||[]), ...(currentPrompt.targets||[]), ...(set.keywords||[]).slice(0,6)]);
+  tags.forEach(t=>{
+    const span=document.createElement('span'); span.className='badge'; span.textContent=t; targetsBox.appendChild(span);
+  });
+
+  feedback.classList.add('hidden');
+  updateAttemptPreview();
+});
+
+/***** RECORDING *****/
+recBtn.addEventListener('click', async ()=>{
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    micHelp.style.display = "none";
+  }catch(e){
+    micHelp.style.display = "block";
+    recStatus.textContent = "Mic: permission denied";
+    return;
+  }
+
+  setupMeter(mediaStream);
+  audioChunks = [];
+  mediaRecorder = new MediaRecorder(mediaStream);
+  mediaRecorder.ondataavailable = e => { if(e.data.size>0) audioChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    player.src = URL.createObjectURL(audioBlob);
+    player.classList.remove('hidden');
+    dlLink.href = player.src;
+    dlLink.classList.remove('hidden');
+    playBtn.disabled = false;
+    stopMeter();
+    stopTimer();
+    mediaStream.getTracks().forEach(t=>t.stop());
+    mediaStream = null;
+    recStatus.textContent = "Mic: stopped";
+    updateAttemptPreview();
+  };
+
+  mediaRecorder.start();
+  startTimer();
+  recStatus.textContent = "Recording…";
+  recBtn.disabled = true; stopBtn.disabled = false; playBtn.disabled = true; dlLink.classList.add('hidden');
+});
+
+stopBtn.addEventListener('click', ()=>{
+  if(mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
+  recBtn.disabled = false; stopBtn.disabled = true;
+});
+playBtn.addEventListener('click', ()=> player.play());
+
+function setupMeter(stream){
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const src = audioCtx.createMediaStreamSource(stream);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  src.connect(analyser);
+  meter();
+}
+function meter(){
+  const data = new Uint8Array(analyser.frequencyBinCount);
+  const loop = () => {
+    analyser.getByteTimeDomainData(data);
+    let peak=0;
+    for(let i=0;i<data.length;i++){
+      const v=Math.abs(data[i]-128)/128; if(v>peak) peak=v;
+    }
+    meterFill.style.width = Math.min(100, Math.round(peak*140)) + "%";
+    rafId = requestAnimationFrame(loop);
+  };
+  loop();
+}
+function stopMeter(){ if(rafId) cancelAnimationFrame(rafId); meterFill.style.width="0%"; }
+
+/***** TIMER *****/
+function startTimer(){
+  startTs = Date.now();
+  timerEl.textContent = "00:00";
+  timerId = setInterval(()=>{
+    const s = Math.floor((Date.now()-startTs)/1000);
+    const mm = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    timerEl.textContent = `${mm}:${ss}`;
+  }, 250);
+}
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+
+/***** FEEDBACK (two-line) *****/
+getFbBtn.addEventListener('click', ()=>{
+  if(!currentPrompt){ alert("Load a prompt first."); return; }
+  const set = PROMPTS[unitSelect.value];
+  const report = evaluateTwoLine(set, currentPrompt);
+  fbGood.textContent = report.good;
+  fbNext.textContent = report.next;
+  fbCefr.textContent = report.cefr ? `${report.cefr} focus` : "";
+  fbStats.textContent = `${report.len.words} words • ${report.targetsHit}/${report.targetsTotal} targets`;
+  feedback.classList.remove('hidden');
+  updateAttemptPreview(report);
+});
+
+/***** SUBMIT (stub) *****/
+submitBtn.addEventListener('click', ()=>{
+  alert("Submit is not connected yet. We’ll wire this to Google Sheets next (Make.com / Apps Script).");
+});
+
+/***** CLEAR *****/
+clearBtn.addEventListener('click', ()=>{
+  player.src=""; player.classList.add('hidden');
+  dlLink.classList.add('hidden'); audioBlob=null;
+  feedback.classList.add('hidden');
+  timerEl.textContent = "00:00";
+  recBtn.disabled=false; stopBtn.disabled=true; playBtn.disabled=true;
+  updateAttemptPreview();
+});
+
+/***** ATTEMPT PREVIEW + COPY *****/
+function updateAttemptPreview(latestReport){
+  const data = {
+    ts: new Date().toISOString(),
+    name: studentName.value || "",
+    id: studentId.value || "",
+    group: studentGroup.value || "",
+    unit: unitSelect.value,
+    level: levelSelect.value,
+    prompt: currentPrompt ? currentPrompt.text : "",
+    duration: timerEl.textContent,
+    audio: player && player.src ? player.src : "",
+    feedback: latestReport ? {
+      good: latestReport.good, next: latestReport.next,
+      cefr: latestReport.cefr, words: latestReport.len.words,
+      targetsHit: latestReport.targetsHit, targetsTotal: latestReport.targetsTotal
+    } : null
+  };
+  attemptPreview.textContent = JSON.stringify(data, null, 2);
+}
+copyBtn.addEventListener('click', ()=>{
+  navigator.clipboard.writeText(attemptPreview.textContent).then(()=> {
+    copyBtn.textContent = "Copied!";
+    setTimeout(()=>copyBtn.textContent="Copy", 1000);
+  });
+});
+
+/***** EVALUATION HEURISTICS (no STT; we judge from targets + simple length proxy) *****/
+function evaluateTwoLine(unit, prompt){
+  // With no transcript text, we approximate length from time.
+  const seconds = readTimerSeconds();
+  // Very rough words guess: 110 wpm → ~1.8 wps
+  const estWords = Math.round(seconds * 1.8);
+  const minWords = prompt.minWords || 40;
+
+  const targets = (unit.targets || []).concat(prompt.targets || []);
+  // We can't parse grammar without text. We gently assume beginner hit 1–2 features if time >= thresholds.
+  let targetsHit = 0;
+  if(seconds >= 25) targetsHit = 1;
+  if(seconds >= 40) targetsHit = 2;
+  if(seconds >= 60) targetsHit = Math.min(3, targets.length);
+
+  // CEFR-ish from duration only (classroom hint)
+  let cefr = "A2–B1";
+  if(seconds >= 35) cefr = "B1";
+  if(seconds >= 55) cefr = "B1+";
+
+  // Strengths
+  const strengths = [];
+  if(seconds >= 25) strengths.push("clear routine and enough detail");
+  if(seconds >= 35) strengths.push("good flow/organization");
+  const good = strengths.length ? capFirst(`What you did well: ${joinTwo(strengths)}.`)
+                                : "What you did well: understandable ideas — good start.";
+
+  // Next step (level-aware)
+  const lvl = levelSelect.value;
+  const tips = [];
+  if(estWords < minWords) tips.push(`speak a bit longer to reach ${minWords}+ words`);
+  if(lvl === "easy") tips.push("add one signposting phrase (first/then)");
+  if(lvl === "medium") tips.push("add two signposts and one comparative");
+  if(lvl === "hard") tips.push("add a contrast signpost (however/whereas) and a reason (because/therefore)");
+  const next = capFirst(`Next step: ${joinTwo(tips)}.`);
+
+  return {
+    good, next, cefr,
+    len: { seconds, words: estWords },
+    targetsHit, targetsTotal: targets.length
+  };
+}
+function readTimerSeconds(){
+  const t = (timerEl.textContent || "00:00").split(":");
+  const mm = parseInt(t[0]||"0",10), ss = parseInt(t[1]||"0",10);
+  return mm*60 + ss;
+}
+
+/***** UTIL *****/
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function capFirst(s){ return s ? s[0].toUpperCase() + s.slice(1) : s; }
+function joinTwo(arr){ if(!arr.length) return ""; if(arr.length===1) return arr[0]; return `${arr[0]} and ${arr[1]}`; }
