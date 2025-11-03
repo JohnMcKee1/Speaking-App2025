@@ -1,108 +1,120 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Speaking App – Prompts + Recorder</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Speaking App – Prompts + Recorder (v1)</title>
   <style>
-    body{font-family:Arial,system-ui;padding:20px;max-width:860px;margin:auto;line-height:1.5;background:#f8fafc}
-    h1{margin:12px 0 8px}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:16px 0}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    label{display:flex;flex-direction:column;font-size:.95rem;gap:6px}
-    input,select{padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;min-width:220px;background:#fff}
-    button{padding:10px 14px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    #prompt{font-size:1.05rem;background:#f8fafc;padding:12px;border-radius:8px;border:1px dashed #cbd5e1}
-    #download{display:none}
-    #meta{font-family:ui-monospace,Consolas,monospace;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px;white-space:pre-wrap}
-    small{opacity:.75}
-
-    /* Top mic-help banner */
-    #mic-help{
-      display:none;background:#fff8e1;border:1px solid #facc15;color:#713f12;
-      border-radius:10px;padding:12px;margin:16px 0
-    }
-    #mic-help b{color:#92400e}
-    #mic-help button{margin-top:6px;padding:6px 10px;border:1px solid #d4a017;border-radius:8px;background:#fff3cd;cursor:pointer}
+    :root { --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --brand:#2563eb; --ok:#16a34a; --warn:#d97706; --err:#dc2626; }
+    body { font-family: system-ui, Arial, sans-serif; background: var(--bg); color: var(--ink); margin:0; }
+    .wrap { max-width: 860px; margin: 24px auto; padding: 0 16px; }
+    h1 { margin: 12px 0 16px; font-size: 1.4rem;}
+    .card { background: var(--card); border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    label { display:block; font-size:.95rem; color: var(--muted); margin-bottom:6px;}
+    input, select, textarea { width: 100%; box-sizing: border-box; padding: 10px; border:1px solid #cbd5e1; border-radius: 10px; margin-bottom: 12px; font: inherit; }
+    textarea { min-height: 80px; }
+    .row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+    .row3 { display: grid; gap: 12px; grid-template-columns: 1fr 1fr 1fr; }
+    button { appearance:none; border:none; background: var(--brand); color:#fff; padding:10px 14px; border-radius: 10px; font-weight:600; cursor:pointer; }
+    button.secondary { background:#e2e8f0; color:#0f172a; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .pill { display:inline-block; padding:4px 8px; border-radius:999px; background:#e2e8f0; color:#0f172a; font-size:.85rem; }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .err { color: var(--err); }
+    small { color: var(--muted); }
+    .footer { text-align:center; color:var(--muted); margin-top:16px; font-size:.85rem; }
   </style>
 </head>
 <body>
-  <h1>Speaking App – Prompts + Recorder</h1>
+  <div class="wrap">
+    <h1>Speaking App · Prompts + Recorder <span class="pill">v1</span></h1>
 
-  <!-- Mic permission help (top banner) -->
-  <div id="mic-help">
-    <strong>🔊 Microphone is blocked.</strong> Please enable it and reload:
-    <ul style="margin:8px 0 0 18px">
-      <li><b>Android (Chrome):</b> tap the 🔒 in the address bar → Permissions → Microphone → Allow → refresh.</li>
-      <li><b>iPhone (Safari):</b> Settings → Safari → Microphone → Allow → reload.</li>
-      <li><b>Laptop (Chrome):</b> click the blocked mic icon → Always allow → refresh.</li>
-    </ul>
-    <button id="mic-help-close">Got it</button>
-  </div>
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>Your name (optional)</label>
+          <input id="name" placeholder="e.g., Ahmed S." />
+        </div>
+        <div>
+          <label>Group/Class (optional)</label>
+          <input id="group" placeholder="e.g., E4-403" />
+        </div>
+      </div>
 
-  <!-- 0) Student details -->
-  <div class="card">
-    <h3>0) Student details</h3>
-    <div class="row">
-      <label>Full name
-        <input id="studentName" placeholder="e.g., Ahmed Al-Harthy">
-      </label>
-      <label>Student ID
-        <input id="studentId" placeholder="e.g., 2414062">
-      </label>
-      <label>Class / Section
-        <input id="studentClass" placeholder="e.g., E4-405">
-      </label>
+      <div class="row3">
+        <div>
+          <label>Scaffold level</label>
+          <select id="scaffold">
+            <option value="Medium" selected>Medium (default)</option>
+            <option value="Low">Low</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+        <div>
+          <label>Grammar target</label>
+          <select id="grammar">
+            <option value="comparatives">Comparatives</option>
+            <option value="contrast">Contrasting ideas</option>
+            <option value="modals">Modals (obligation/advice)</option>
+            <option value="signposting">Signposting</option>
+            <option value="first_conditional">First conditional</option>
+          </select>
+        </div>
+        <div>
+          <label>Vocab set</label>
+          <select id="vocab">
+            <option value="health_fitness">Unit 5 – Health & Fitness</option>
+            <option value="discovery_invention">Unit 6 – Discovery & Invention</option>
+            <option value="economics">Unit 8 – Economics</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Prompt</label>
+      <select id="prompt">
+        <option value="p1">Describe a healthy daily routine using at least two signposting phrases.</option>
+        <option value="p2">Compare two inventions and explain which has had a greater impact.</option>
+        <option value="p3">Give advice to a friend who wants to save money and get fit.</option>
+      </select>
+      <small id="promptText"></small>
+    </div>
+
+    <div class="card">
+      <label>Recorder</label>
+      <div class="row">
+        <div>
+          <button id="startBtn">🎙️ Start</button>
+          <button id="stopBtn" class="secondary" disabled>⏹️ Stop</button>
+        </div>
+        <div style="align-self:center">
+          <strong id="timer">00:00</strong> <small>(max ~2 min recommended)</small>
+        </div>
+      </div>
+      <audio id="player" controls></audio>
+      <div class="row">
+        <div>
+          <label>Self rating (1–5)</label>
+          <select id="rating">
+            <option value="">—</option>
+            <option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option>
+          </select>
+        </div>
+        <div>
+          <label>Notes (optional)</label>
+          <input id="notes" placeholder="e.g., struggled with /ɪ/ sound" />
+        </div>
+      </div>
+      <button id="submitBtn" disabled>Submit to Teacher</button>
+      <div id="status"></div>
+    </div>
+
+    <div class="footer">
+      <small>This prototype sends metadata to Google Sheets via Make.com. Audio upload will be added later.</small>
     </div>
   </div>
 
-  <!-- 1) Prompts -->
-  <div class="card">
-    <h3>1) Choose a prompt</h3>
-    <div class="row">
-      <label>Topic:
-        <select id="topic">
-          <option value="animals">Unit 1 – Animals</option>
-          <option value="environment">Unit 2 – The Environment</option>
-          <option value="transport">Unit 3 – Transport</option>
-          <option value="customs">Unit 4 – Customs & Traditions</option>
-          <option value="health">Unit 5 – Health & Fitness</option>
-          <option value="invention">Unit 6 – Discovery & Invention</option>
-          <option value="economics">Unit 8 – Economics</option>
-        </select>
-      </label>
-      <button id="nextPrompt">Next prompt</button>
-    </div>
-    <p id="prompt">Click “Next prompt” to load one.</p>
-  </div>
-
-  <!-- 2) Record -->
-  <div class="card">
-    <h3>2) Record your answer</h3>
-    <p id="status">Loading…</p>
-    <p>Time: <b id="timer">00:00</b></p>
-    <div class="row">
-      <button id="record" disabled>🎙️ Start Recording</button>
-      <button id="stop" disabled>■ Stop</button>
-    </div>
-    <audio id="player" controls style="width:100%;margin-top:10px;"></audio>
-    <p><a id="download" href="#">⬇️ Download recording</a></p>
-    <small>Tip: If the microphone prompt doesn’t appear, refresh and click “Allow”. On iPhone, use Safari.</small>
-  </div>
-
-  <!-- 3) Metadata preview -->
-  <div class="card">
-    <h3>3) Recording data</h3>
-    <p>This is what will be sent to the teacher (we’ll connect to Google Sheets next):</p>
-    <div id="meta">(record something to generate data)</div>
-    <div class="row" style="margin-top:10px">
-      <button id="copyData" disabled>📋 Copy data</button>
-      <button id="submit" disabled>📤 Submit (connect next)</button>
-    </div>
-  </div>
-
-  <!-- version bump to avoid cache -->
-  <script src="script.js?v=5"></script>
+  <script src="script.js"></script>
 </body>
 </html>
+
