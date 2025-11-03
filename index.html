@@ -1,24 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Speaking Coach — Units 1–8 (no 7)</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#121a36; --text:#e8eefc; --muted:#a8b3d9;
+      --accent:#6aa0ff; --good:#3ecf8e; --warn:#ffcc66; --bad:#ff7a7a;
+      --card:#0f1630; --ghost:#26325e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif;
+      background:radial-gradient(1200px 600px at 10% -10%, #1a2552 0%, #0b1020 60%);
+      color:var(--text);
+    }
+    header{padding:24px 20px 8px; text-align:center}
+    h1{margin:0 0 6px; font-size:1.8rem}
+    .sub{margin:0; color:var(--muted)}
+    main{max-width:980px; margin:24px auto; padding:0 16px}
+    .row{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px}
+    .pill{background:var(--panel); padding:10px 12px; border-radius:14px; display:flex; align-items:center; gap:10px}
+    label{color:var(--muted)}
+    select,button{
+      appearance:none; border:none; outline:none;
+      background:var(--card); color:var(--text);
+      padding:10px 12px; border-radius:12px; font-size:14px; cursor:pointer;
+    }
+    button:hover{filter:brightness(1.06)}
+    button.ghost{background:var(--ghost)}
+    .card{
+      background:linear-gradient(180deg,#111a3a,#0e1631);
+      border:1px solid #223062; border-radius:16px; padding:16px 18px; margin-bottom:16px;
+      box-shadow:0 12px 28px rgba(0,0,0,0.35);
+    }
+    .targets{margin-top:8px; display:flex; flex-wrap:wrap; gap:6px}
+    .badge{padding:6px 10px; border-radius:999px; background:#1b2652; border:1px dashed #32447e; color:#c7d4ff; font-size:12px}
+    textarea{
+      width:100%; background:#0b122b; color:var(--text); border:1px solid #223062;
+      border-radius:12px; padding:12px; resize:vertical; font-size:15px;
+    }
+    .audio-bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .status{font-size:13px; color:var(--muted)}
+    .meter{width:120px; height:10px; border-radius:6px; background:#0b122b; border:1px solid #223062; overflow:hidden}
+    .meter > div{height:100%; background:var(--accent); width:0%}
+    .hidden{display:none}
+    .metric{display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:12px; background:#0b122b; border:1px solid #223062}
+    .metric.good{border-color:#275a48}.metric.warn{border-color:#7a6127}.metric.bad{border-color:#6a2a2a}
+    .dot{width:10px; height:10px; border-radius:50%}
+    .metric.good .dot{background:var(--good)} .metric.warn .dot{background:var(--warn)} .metric.bad .dot{background:var(--bad)}
+    .metric + .metric{margin-top:8px}
+    .scores{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .score{background:#0b122b; border:1px solid #223062; border-radius:12px; padding:10px 12px}
+    .warnline{color:#ffccaa; font-size:13px}
+  </style>
 </head>
 <body>
   <header>
     <h1>AI Speaking Coach</h1>
-    <p class="sub">Units 1–8 (excluding 7) • Easy / Medium / Hard • Instant two-line feedback</p>
+    <p class="sub">Units 1–8 (excluding 7) • Easy / Medium / Hard • Mic + STT + Playback</p>
   </header>
 
   <main>
-    <section class="controls">
-      <div class="control">
+    <div class="row">
+      <div class="pill">
         <label for="unitSelect">Unit</label>
         <select id="unitSelect"></select>
       </div>
-      <div class="control">
+      <div class="pill">
         <label for="levelSelect">Level</label>
         <select id="levelSelect">
           <option value="easy">Easy</option>
@@ -26,54 +76,54 @@
           <option value="hard">Hard</option>
         </select>
       </div>
-      <div class="control">
+      <div class="pill">
         <button id="loadPromptBtn">Load Prompt</button>
       </div>
-    </section>
+    </div>
 
-    <section class="prompt-card">
+    <section class="card">
       <h2 id="promptTitle">Prompt</h2>
-      <p id="promptText" class="prompt-text">Choose a unit and level, then click “Load Prompt”.</p>
+      <p id="promptText" class="sub">Choose a unit/level, then click “Load Prompt”.</p>
       <div id="targetsBox" class="targets"></div>
     </section>
 
-    <section class="response-card">
-      <h3>Your response</h3>
-      <textarea id="responseInput" rows="8" placeholder="Type (or paste a transcript) here..."></textarea>
-      <div class="actions">
-        <button id="submitBtn">Submit</button>
+    <section class="card">
+      <h3>Record your answer</h3>
+      <div class="audio-bar">
+        <button id="recBtn">🎙️ Start Recording</button>
+        <button id="stopBtn" class="ghost" disabled>⏹ Stop</button>
+        <button id="playBtn" class="ghost" disabled>▶️ Play Last</button>
+        <span id="recStatus" class="status">Mic: idle</span>
+        <div class="meter"><div id="meterFill"></div></div>
+        <audio id="player" class="hidden" controls></audio>
+      </div>
+      <p class="warnline" id="sttWarn"></p>
+      <h4>Transcript (auto)</h4>
+      <textarea id="transcript" rows="6" placeholder="Your speech will appear here..." readonly></textarea>
+      <div style="margin-top:10px">
+        <button id="feedbackBtn">Get Feedback</button>
         <button id="clearBtn" class="ghost">Clear</button>
       </div>
     </section>
 
-    <section id="feedback" class="feedback hidden">
-      <h3>Feedback</h3>
-      <p class="fb-line"><strong>What you did well:</strong> <span id="fbGood"></span></p>
-      <p class="fb-line"><strong>Next step:</strong> <span id="fbNext"></span></p>
-      <div class="meta">
-        <span id="fbCefr" class="tag"></span>
-        <span id="fbStats" class="tag"></span>
-      </div>
+    <section id="feedback" class="card hidden">
+      <h3>Feedback (detailed)</h3>
+      <div id="feedbackBody"></div>
+      <div class="scores" id="scoreRow"></div>
     </section>
 
-    <section class="help">
+    <section class="card">
       <details>
-        <summary>How this feedback works</summary>
+        <summary>How this works</summary>
         <ul>
-          <li>Checks <em>length & clarity</em>, <em>topic keywords</em>, and <em>target language</em> (e.g., first conditional, signposting).</li>
-          <li>Outputs two short sentences your students can act on in 30–45 seconds.</li>
-          <li>Shows a light “CEFR-ish” focus tag (for classroom guidance only).</li>
+          <li>We record your voice locally and also run on-device speech-to-text.</li>
+          <li>No internet calls are needed for scoring; everything is client-side.</li>
+          <li>Feedback checks <em>length & clarity</em>, <em>topic keywords</em>, and <em>target language</em> (e.g., first conditional, signposting).</li>
         </ul>
       </details>
     </section>
   </main>
 
-  <footer>
-    <small>Static prototype. No data leaves this page.</small>
-  </footer>
-
-  <script src="prompts.js"></script>
-  <script src="app.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
-
