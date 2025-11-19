@@ -480,7 +480,11 @@ async function analyzeRecording() {
       method: "POST",
       body: formData
     });
-
+if (!response.ok) {
+  throw new Error(`HTTP error! status: ${response.status}`);
+}
+const text = await response.text(); // Get the raw response body
+console.log(text); // Log it to check what's being returned
     // Parse the response from the server
     const data = await response.json();
 
@@ -508,4 +512,5 @@ async function analyzeRecording() {
   </script>
 </body>
 </html>
+
 
