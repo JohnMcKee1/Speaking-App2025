@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000;
 
 // Set up CORS to allow specific origins or all origins in development
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*', // Allow all in development, restrict in production
+  origin: '*', // Allow all in development, restrict in production
 }));
 
 // Set up multer for handling incoming audio files with a file size limit (e.g., 10MB)
