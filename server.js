@@ -4,51 +4,82 @@ import cors from 'cors';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Set up CORS to allow specific origins or all origins in development
 app.use(cors({
-  origin: '*', // Allow all in development, restrict in production
+  origin: '*',
 }));
 
-// Set up multer for handling incoming audio files with a file size limit (e.g., 10MB)
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
 const upload = multer({
-  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
-}).single('audio'); // Expecting the field name to be 'audio'
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('audio/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed!'), false);
+    }
+  }
+}).single('audio');
 
-// Set up OpenAI client using the API key from environment variable
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Use environment variable for API key
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 app.post('/analyze', (req, res) => {
   upload(req, res, async (err) => {
-    if (err) return res.status(400).json({ error: 'File too large or no file uploaded.' });
+    if (err) {
+      console.error('Upload error:', err);
+      return res.status(400).json({ error: 'File upload failed: ' + err.message });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file uploaded.' });
+    }
 
     try {
-      // 1. TRANSCRIBE AUDIO
+      console.log('Received file:', {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
+
+      // 1. TRANSCRIBE AUDIO - Send as buffer with proper content type
       const transcript = await client.audio.transcriptions.create({
         file: {
-          data: req.file.buffer,
-          name: 'audio.wav'
+          // Create a proper File-like object
+          value: req.file.buffer,
+          options: {
+            filename: 'audio.webm', // or 'audio.wav' depending on what you're sending
+            contentType: req.file.mimetype,
+          }
         },
-        model: 'gpt-4o-transcribe', // or whisper-1
+        model: 'whisper-1', // Use whisper-1 instead of gpt-4o-transcribe
+        language: 'en', // Optional: specify language
+        response_format: 'json',
       });
+
+      console.log('Transcription successful:', transcript.text.substring(0, 100) + '...');
 
       // 2. ANALYZE THE TRANSCRIPT
       const feedbackResponse = await client.chat.completions.create({
-        model: "gpt-4.1",
+        model: "gpt-4", // Fixed model name
         messages: [
-          { role: 'system', content: 'You are an ESL speaking examiner.' },
+          { 
+            role: 'system', 
+            content: 'You are an ESL speaking examiner. Provide clear, structured feedback on grammar, pronunciation, fluency, and task completion.' 
+          },
           {
             role: 'user',
-            content: `Analyze the following student's speech based on grammar, pronunciation, fluency, and task completion. Return clear structured feedback.\n\nTranscript:\n${transcript.text}`
+            content: `Please analyze this student's speech and provide constructive feedback:\n\n"${transcript.text}"`
           },
         ],
+        max_tokens: 500,
       });
 
       res.json({ 
@@ -57,20 +88,19 @@ app.post('/analyze', (req, res) => {
       });
 
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Error analyzing audio.' });
+      console.error('Analysis error:', error);
+      res.status(500).json({ 
+        error: 'Error analyzing audio: ' + (error.message || 'Unknown error'),
+        details: error.response?.data || 'No additional details'
+      });
     }
   });
 });
 
-
-// Optional: Add a basic health check route for easier debugging
 app.get('/', (req, res) => {
   res.send('Server is up and running!');
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
-
