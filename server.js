@@ -33,7 +33,7 @@ app.post('/analyze', (req, res) => {
       // 1. TRANSCRIBE AUDIO
       const transcript = await client.audio.transcriptions.create({
         file: {
-          buffer: req.file.buffer,
+          data: req.file.buffer,
           name: 'audio.wav'
         },
         model: 'gpt-4o-transcribe', // or whisper-1
