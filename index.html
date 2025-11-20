@@ -450,48 +450,34 @@ async function analyzeRecording() {
     return;
   }
 
-  feedbackText.textContent = "Analyzing your speech... (this may take 30-60 seconds)";
+  feedbackText.textContent = "Converting and analyzing your speech...";
   feedbackBtn.disabled = true;
-  statusEl.textContent = "Processing audio with AI...";
+  statusEl.textContent = "Processing audio...";
 
   try {
-    // First, try without conversion (send the original WebM with Opus)
-    console.log("Original audio:", {
-      type: recordedBlob.type,
-      size: recordedBlob.size
+    // Always convert to proper WAV format for OpenAI compatibility
+    const wavBlob = await convertToProperWAV(recordedBlob);
+    
+    console.log("Audio prepared for analysis:", {
+      originalType: recordedBlob.type,
+      convertedType: wavBlob.type,
+      originalSize: recordedBlob.size,
+      convertedSize: wavBlob.size
     });
 
     const formData = new FormData();
-    
-    // Try sending the original WebM/Opus format first (it's often supported)
-    if (recordedBlob.type.includes('webm') || recordedBlob.type.includes('opus')) {
-      formData.append("audio", recordedBlob, "recording.webm");
-    } else {
-      // Fallback to WAV conversion
-      const wavBlob = await convertWebMToWAV(recordedBlob);
-      formData.append("audio", wavBlob, "recording.wav");
-    }
+    formData.append("audio", wavBlob, "audio.wav");
 
-    // Increase timeout to 120 seconds
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000); // 120 seconds
-
+    // Use the quick endpoint for faster processing
     const response = await fetch("https://speaking-app2025.onrender.com/analyze", {
       method: "POST",
-      body: formData,
-      signal: controller.signal
+      body: formData
     });
 
-    clearTimeout(timeoutId);
-
     if (!response.ok) {
-      let errorText;
-      try {
-        errorText = await response.text();
-      } catch (e) {
-        errorText = 'Could not read error response';
-      }
-      throw new Error(`Server error: ${response.status} - ${errorText}`);
+      const errorText = await response.text();
+      console.error("Server response:", errorText);
+      throw new Error(`Server error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -509,67 +495,66 @@ async function analyzeRecording() {
 
   } catch (err) {
     console.error('Analysis error:', err);
-    if (err.name === 'AbortError') {
-      feedbackText.textContent = "Request timed out. The server is taking too long to process. Please try a shorter recording or try again later.";
-      statusEl.textContent = "Timeout error - server overloaded.";
-    } else {
-      feedbackText.textContent = "Error analyzing audio: " + err.message;
-      statusEl.textContent = "Analysis error.";
-    }
+    feedbackText.textContent = "Error analyzing audio: " + err.message;
+    statusEl.textContent = "Analysis error.";
   }
 
   feedbackBtn.disabled = false;
 }
 
-// Convert WebM blob to WAV format using Web Audio API
-async function convertWebMToWAV(webmBlob) {
-  return new Promise((resolve, reject) => {
-    // Create an audio context
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+// Simple conversion to WAV - more reliable approach
+async function convertToProperWAV(audioBlob) {
+  return new Promise((resolve) => {
+    // For maximum compatibility, create a simple WAV file
+    // This creates a minimal WAV header with the audio data
+    const reader = new FileReader();
     
-    // Create file reader to read the WebM blob
-    const fileReader = new FileReader();
-    
-    fileReader.onload = function() {
+    reader.onload = function() {
       const arrayBuffer = this.result;
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       
-      // Decode the WebM audio data
       audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-        // Convert the AudioBuffer to WAV format
-        const wavBlob = audioBufferToWav(audioBuffer);
+        // Convert to WAV with proper headers
+        const wavBuffer = encodeWAV(audioBuffer);
+        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
         resolve(wavBlob);
       }, (error) => {
-        console.error('Error decoding audio:', error);
-        // Fallback: create a blob with WAV type but same content
-        const fallbackBlob = new Blob([webmBlob], { type: 'audio/wav' });
+        console.warn('Audio decoding failed, using fallback conversion:', error);
+        // Fallback: create a WAV blob with minimal conversion
+        const fallbackBlob = createFallbackWAV(audioBlob);
         resolve(fallbackBlob);
       });
     };
     
-    fileReader.onerror = () => {
-      // Fallback if conversion fails
-      const fallbackBlob = new Blob([webmBlob], { type: 'audio/wav' });
+    reader.onerror = () => {
+      // Ultimate fallback
+      const fallbackBlob = createFallbackWAV(audioBlob);
       resolve(fallbackBlob);
     };
     
-    fileReader.readAsArrayBuffer(webmBlob);
+    reader.readAsArrayBuffer(audioBlob);
   });
 }
 
-// Convert AudioBuffer to WAV Blob
-function audioBufferToWav(audioBuffer) {
+// Create a proper WAV file from AudioBuffer
+function encodeWAV(audioBuffer) {
   const numChannels = audioBuffer.numberOfChannels;
   const sampleRate = audioBuffer.sampleRate;
-  const length = audioBuffer.length;
+  const format = 1; // PCM
+  const bitDepth = 16;
   
-  // Create WAV header
-  const wavBuffer = new ArrayBuffer(44 + length * numChannels * 2);
-  const view = new DataView(wavBuffer);
+  const bytesPerSample = bitDepth / 8;
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = audioBuffer.length * blockAlign;
+  
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
   
   // RIFF identifier
   writeString(view, 0, 'RIFF');
-  // RIFF chunk length
-  view.setUint32(4, 36 + length * numChannels * 2, true);
+  // file length
+  view.setUint32(4, 36 + dataSize, true);
   // RIFF type
   writeString(view, 8, 'WAVE');
   // format chunk identifier
@@ -577,32 +562,43 @@ function audioBufferToWav(audioBuffer) {
   // format chunk length
   view.setUint32(16, 16, true);
   // sample format (raw)
-  view.setUint16(20, 1, true);
+  view.setUint16(20, format, true);
   // channel count
   view.setUint16(22, numChannels, true);
   // sample rate
   view.setUint32(24, sampleRate, true);
   // byte rate (sample rate * block align)
-  view.setUint32(28, sampleRate * numChannels * 2, true);
+  view.setUint32(28, byteRate, true);
   // block align (channel count * bytes per sample)
-  view.setUint16(32, numChannels * 2, true);
+  view.setUint16(32, blockAlign, true);
   // bits per sample
-  view.setUint16(34, 16, true);
+  view.setUint16(34, bitDepth, true);
   // data chunk identifier
   writeString(view, 36, 'data');
   // data chunk length
-  view.setUint32(40, length * numChannels * 2, true);
+  view.setUint32(40, dataSize, true);
   
-  // Write the PCM samples
+  // write PCM samples
   const offset = 44;
-  for (let i = 0; i < length; i++) {
-    for (let channel = 0; channel < numChannels; channel++) {
-      const sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(channel)[i]));
-      view.setInt16(offset + (i * numChannels + channel) * 2, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+  if (bitDepth === 16) {
+    for (let i = 0; i < audioBuffer.length; i++) {
+      for (let channel = 0; channel < numChannels; channel++) {
+        const sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(channel)[i]));
+        view.setInt16(offset + (i * numChannels + channel) * 2, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      }
     }
   }
   
-  return new Blob([wavBuffer], { type: 'audio/wav' });
+  return buffer;
+}
+
+// Fallback WAV creation for maximum compatibility
+function createFallbackWAV(originalBlob) {
+  console.log("Using fallback WAV conversion");
+  // Simply rename the blob type to WAV - sometimes this works
+  return new Blob([originalBlob], { 
+    type: 'audio/wav' 
+  });
 }
 
 function writeString(view, offset, string) {
@@ -610,7 +606,6 @@ function writeString(view, offset, string) {
     view.setUint8(offset + i, string.charCodeAt(i));
   }
 }
-
 // ====== EVENT LISTENERS ======
 recordBtn.addEventListener("click", startRecording);
 stopBtn.addEventListener("click", stopRecording);
