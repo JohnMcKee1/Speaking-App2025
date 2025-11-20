@@ -48,27 +48,33 @@ app.post('/analyze', (req, res) => {
         mimetype: req.file.mimetype,
         size: req.file.size
       });
+// Alternative upload handler
+app.post('/analyze', (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      console.error('Upload error:', err);
+      return res.status(400).json({ error: 'File upload failed: ' + err.message });
+    }
 
-      // 1. TRANSCRIBE AUDIO - Send as buffer with proper content type
+    if (!req.file) {
+      return res.status(400).json({ error: 'No audio file uploaded.' });
+    }
+
+    try {
+      console.log('Received file type:', req.file.mimetype);
+
+      // SIMPLIFIED APPROACH - Just send the buffer directly
       const transcript = await client.audio.transcriptions.create({
-        file: {
-          // Create a proper File-like object
-          value: req.file.buffer,
-          options: {
-            filename: 'audio.webm', // or 'audio.wav' depending on what you're sending
-            contentType: req.file.mimetype,
-          }
-        },
-        model: 'whisper-1', // Use whisper-1 instead of gpt-4o-transcribe
-        language: 'en', // Optional: specify language
-        response_format: 'json',
+        file: req.file.buffer, // Send buffer directly
+        model: 'whisper-1',
+        language: 'en',
       });
 
-      console.log('Transcription successful:', transcript.text.substring(0, 100) + '...');
+      console.log('Transcription successful');
 
-      // 2. ANALYZE THE TRANSCRIPT
+      // Rest of your analysis code...
       const feedbackResponse = await client.chat.completions.create({
-        model: "gpt-4", // Fixed model name
+        model: "gpt-4",
         messages: [
           { 
             role: 'system', 
@@ -88,10 +94,10 @@ app.post('/analyze', (req, res) => {
       });
 
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('Full error object:', JSON.stringify(error, null, 2));
+      
       res.status(500).json({ 
-        error: 'Error analyzing audio: ' + (error.message || 'Unknown error'),
-        details: error.response?.data || 'No additional details'
+        error: 'Error analyzing audio: ' + (error.message || 'Unknown error')
       });
     }
   });
