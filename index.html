@@ -263,6 +263,8 @@ let audioChunks = [];
 let timerInterval = null;
 let seconds = 0;
 let recordedBlob = null;
+let studentId = null;
+let classCode = null;
 
 // ====== PROMPT HANDLING ======
 function setPrompt(promptNumber) {
@@ -404,8 +406,16 @@ async function uploadRecording() {
     return;
   }
 
-  const studentId = studentIdInput.value.trim() || "anonymous";
-  const classCode = classCodeInput.value.trim() || "unknown";
+  const studentId = studentIdInput.value.trim();
+  const classCode = classCodeInput.value.trim();
+  if (!studentId) {
+    statusEl.textContent = "Please enter your student ID.";
+    return;
+  }
+    if (!classCode) {
+    statusEl.textContent = "Please enter your class code.";
+    return;
+  }
   const now = new Date();
 
   const y = now.getFullYear();
@@ -431,7 +441,7 @@ async function uploadRecording() {
       URL.revokeObjectURL(url);
     }, 100);
     
-    const googleDriveFolderUrl = "https://drive.google.com/drive/folders/1Vhk_9L1Cbbyedz4TZULG74alHmfzpwhK";
+    const googleDriveFolderUrl = "https://drive.google.com/drive/folders/1N_rgdHPwQZlsNw9E3iQAoLiPRdE6M0HO";
     window.open(googleDriveFolderUrl, '_blank');
 
     statusEl.textContent = "Downloaded successfully. Please upload the audio file to your teacher's Google Drive.";
