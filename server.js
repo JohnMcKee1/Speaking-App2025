@@ -25,42 +25,44 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // Use environment variable for API key
 });
 
-// Endpoint for analyzing the audio file
 app.post('/analyze', (req, res) => {
   upload(req, res, async (err) => {
-    if (err) {
-      return res.status(400).json({ error: 'File too large or no file uploaded.' });
-    }
+    if (err) return res.status(400).json({ error: 'File too large or no file uploaded.' });
 
     try {
-      // Convert the uploaded file to base64
-      const audioBase64 = req.file.buffer.toString('base64');
+      // 1. TRANSCRIBE AUDIO
+      const transcript = await client.audio.transcriptions.create({
+        file: {
+          buffer: req.file.buffer,
+          name: 'audio.wav'
+        },
+        model: 'gpt-4o-transcribe', // or whisper-1
+      });
 
-      // Send request to OpenAI API to analyze the audio content
-      const response = await client.chat.completions.create({
-        model: 'gpt-4',
+      // 2. ANALYZE THE TRANSCRIPT
+      const feedbackResponse = await client.chat.completions.create({
+        model: "gpt-4.1",
         messages: [
           { role: 'system', content: 'You are an ESL speaking examiner.' },
-          { 
-            role: 'user', 
-            content: 'Analyze the following student\'s speech, and provide structured feedback based on grammar, pronunciation, fluency, and task completion. Return the feedback in a clear, readable format.'
+          {
+            role: 'user',
+            content: `Analyze the following student's speech based on grammar, pronunciation, fluency, and task completion. Return clear structured feedback.\n\nTranscript:\n${transcript.text}`
           },
-          { role: 'user', content: audioBase64 }
         ],
       });
 
-      // Extract the feedback text from the response
-      const feedback = response.choices[0].message.content;
+      res.json({ 
+        transcript: transcript.text,
+        feedback: feedbackResponse.choices[0].message.content 
+      });
 
-      // Send the feedback as the response
-      res.json({ feedback });
-
-    } catch (err) {
-      console.error('Error analyzing audio:', err);
+    } catch (error) {
+      console.error(error);
       res.status(500).json({ error: 'Error analyzing audio.' });
     }
   });
 });
+
 
 // Optional: Add a basic health check route for easier debugging
 app.get('/', (req, res) => {
