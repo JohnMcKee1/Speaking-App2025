@@ -13,19 +13,11 @@ app.use(cors({
   origin: '*',
 }));
 
-// Configure multer for memory storage
+// Configure multer with explicit boundary
 const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    // Accept all audio mime types
-    if (file.mimetype.startsWith('audio/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only audio files are allowed!'), false);
-    }
-  }
+  limits: { fileSize: 10 * 1024 * 1024 },
 }).single('audio');
 
 const client = new OpenAI({
@@ -50,12 +42,23 @@ app.post('/analyze', (req, res) => {
         size: req.file.size
       });
 
-      // SIMPLIFIED APPROACH - Send buffer directly to OpenAI
+      // Create a custom boundary for the OpenAI request
+      const boundary = 'WebAppBoundary12345';
+      
+      // Manually create the multipart form data
+      const formData = `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="audio.webm"\r\nContent-Type: ${req.file.mimetype}\r\n\r\n${req.file.buffer.toString('binary')}\r\n--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\nwhisper-1\r\n--${boundary}--`;
+
+      // 1. TRANSCRIBE AUDIO - Send with custom boundary
       const transcript = await client.audio.transcriptions.create({
-        file: req.file.buffer, // Send the buffer directly
+        file: req.file.buffer,
         model: 'whisper-1',
         language: 'en',
         response_format: 'text',
+      }, {
+        // Override the default boundary
+        headers: {
+          'Content-Type': `multipart/form-data; boundary=${boundary}`
+        }
       });
 
       console.log('Transcription successful. Text length:', transcript.length);
@@ -107,43 +110,93 @@ Keep it constructive and encouraging. Focus on specific improvements the student
   });
 });
 
+// Alternative endpoint that uses a different approach
+app.post('/analyze-direct', async (req, res) => {
+  // This endpoint will receive the audio as base64 and handle the multipart form manually
+  let body = '';
+  
+  req.on('data', chunk => {
+    body += chunk.toString();
+  });
+  
+  req.on('end', async () => {
+    try {
+      const { audio, mimeType = 'audio/webm' } = JSON.parse(body);
+      
+      if (!audio) {
+        return res.status(400).json({ error: 'No audio data provided' });
+      }
+
+      // Convert base64 to buffer
+      const audioBuffer = Buffer.from(audio, 'base64');
+      
+      // Create form data with custom boundary for OpenAI
+      const boundary = 'WebAppBoundary';
+      const formData = [
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="file"; filename="audio.webm"',
+        `Content-Type: ${mimeType}`,
+        '',
+        audioBuffer.toString('binary'),
+        `--${boundary}`,
+        'Content-Disposition: form-data; name="model"',
+        '',
+        'whisper-1',
+        `--${boundary}--`
+      ].join('\r\n');
+
+      // Use fetch to send to OpenAI with custom boundary
+      const openaiResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        },
+        body: formData,
+      });
+
+      if (!openaiResponse.ok) {
+        const errorText = await openaiResponse.text();
+        throw new Error(`OpenAI API error: ${openaiResponse.status} - ${errorText}`);
+      }
+
+      const transcription = await openaiResponse.json();
+      
+      // Continue with GPT analysis as before
+      const feedbackResponse = await client.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          { 
+            role: 'system', 
+            content: `You are an ESL speaking examiner. Provide clear, structured feedback.`
+          },
+          {
+            role: 'user',
+            content: `Please analyze this student's speech transcript and provide feedback:\n\n"${transcription.text}"`
+          },
+        ],
+        max_tokens: 500,
+      });
+
+      res.json({ 
+        transcript: transcription.text,
+        feedback: feedbackResponse.choices[0].message.content 
+      });
+
+    } catch (error) {
+      console.error('Direct analysis error:', error);
+      res.status(500).json({ 
+        error: 'Error analyzing audio: ' + (error.message || 'Unknown error')
+      });
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/', (req, res) => {
   res.send('Server is up and running!');
 });
 
-// Debug endpoint to test file uploads
-app.post('/debug-upload', (req, res) => {
-  upload(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({ error: err.message });
-    }
-    
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file received' });
-    }
-
-    res.json({
-      received: true,
-      fileInfo: {
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        bufferLength: req.file.buffer.length
-      },
-      message: 'File received successfully - this confirms multer is working'
-    });
-  });
-});
-
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-// Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
-  console.log('Make sure OPENAI_API_KEY is set in your environment variables');
 });
