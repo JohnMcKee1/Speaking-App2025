@@ -2,426 +2,304 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Speaking Practice – Unit 3</title>
+  <title>IELTS-style Speaking Practice – Units 1–4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      margin: 0;
-      padding: 16px;
-      background: #f4f4f8;
-      color: #222;
     }
 
-    .app {
-      max-width: 600px;
-      margin: 0 auto;
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      max-width: 820px;
+      margin: 24px;
       background: #ffffff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      padding: 24px 24px 16px;
     }
 
     h1 {
-      font-size: 1.5rem;
-      margin-bottom: 4px;
+      margin: 0 0 4px;
+      font-size: 26px;
+      font-weight: 700;
+      color: #111827;
     }
 
-    h2 {
-      font-size: 1.1rem;
-      margin-top: 0;
-      color: #555;
+    .subtitle {
+      margin: 0 0 16px;
+      font-size: 16px;
+      color: #4b5563;
+      font-weight: 500;
     }
 
-    .meta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .meta-row label {
-      font-size: 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      flex: 1;
-      min-width: 120px;
-    }
-
-    input[type="text"] {
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 0.9rem;
-    }
-
-    .prompt-selector {
-      display: flex;
-      gap: 8px;
-      margin: 12px 0;
-      flex-wrap: wrap;
-    }
-
-    .prompt-btn {
-      flex: 1;
-      min-width: 70px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid #ccc;
-      background: #f0f0f5;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .prompt-btn.active {
-      background: #2563eb;
-      color: white;
-      border-color: #2563eb;
-    }
-
-    .prompt-text {
-      background: #fafafa;
-      border-radius: 12px;
-      padding: 10px 12px;
-      border: 1px solid #e0e0e0;
-      font-size: 0.95rem;
-      line-height: 1.4;
+    .small-note {
+      font-size: 13px;
+      color: #6b7280;
       margin-bottom: 16px;
     }
 
-    .controls {
+    .top-row {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #4b5563;
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
+    }
+
+    .prompt-tabs {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 12px;
     }
 
-    button {
+    .prompt-tab {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      background: #e5e7eb;
+      color: #374151;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+    }
+
+    .prompt-tab.active {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .prompt-tab:active {
+      transform: translateY(1px);
+    }
+
+    .prompt-box {
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 14px 14px 10px;
+      min-height: 88px;
+      font-size: 14px;
+      color: #111827;
+      background: #f9fafb;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    .prompt-heading {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .prompt-list {
+      margin: 4px 0 0 16px;
+      padding: 0;
+    }
+
+    .prompt-list li {
+      margin-bottom: 2px;
+    }
+
+    .timer-row {
+      font-family: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+      font-size: 14px;
+      color: #111827;
+      margin-bottom: 10px;
+    }
+
+    .timer-label {
+      font-weight: 600;
+    }
+
+    .timer-value {
+      margin-left: 4px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .button-row-long {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    button.main-btn {
+      width: 100%;
       border: none;
       border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 0.95rem;
+      padding: 11px 0;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
+      color: #ffffff;
+      transition: opacity 0.15s, transform 0.08s;
     }
 
-    .record {
-      background: #dc2626;
-      color: white;
-      flex: 1;
-      min-width: 140px;
+    button.main-btn:disabled {
+      opacity: 0.55;
+      cursor: default;
     }
 
-    .stop {
-      background: #fbbf24;
-      color: #222;
-      flex: 1;
-      min-width: 140px;
+    button.main-btn:active:not(:disabled) {
+      transform: translateY(1px);
     }
 
-    .play {
-      background: #16a34a;
-      color: white;
-      flex: 1;
-      min-width: 140px;
+    #startRecording {
+      background: #ef4444; /* red */
     }
 
-    .upload {
-      background: #2563eb;
-      color: white;
-      flex: 1;
-      min-width: 140px;
+    #stopRecording {
+      background: #facc15; /* amber */
+      color: #78350f;
     }
 
-    .disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    #playRecording {
+      background: #22c55e; /* green */
     }
 
-    .timer {
-      font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 1rem;
-      margin-bottom: 8px;
+    #downloadAudio {
+      background: #3b82f6; /* blue */
     }
 
-    .status {
-      font-size: 0.85rem;
-      color: #555;
-      min-height: 1.2em;
-      margin-top: 4px;
+    #assessRecording {
+      background: #a855f7; /* purple */
     }
 
-    audio {
-      width: 100%;
-      margin-top: 8px;
+    .status-box {
+      border-radius: 999px;
+      background: #f3f4f6;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: #4b5563;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
     }
 
-    .footer {
-      margin-top: 16px;
-      font-size: 0.75rem;
-      color: #777;
+    .footer-note {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+
+      .button-row,
+      .button-row-long {
+        grid-template-columns: 1fr;
+      }
+
+      .app-wrapper {
+        margin: 12px;
+        padding: 18px 16px 12px;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="app">
-    <h1>Speaking Practice – Unit 3</h1>
-    <h2>Transport – Traffic, travel & suggestions</h2>
+  <div class="app-wrapper">
+    <h1>IELTS-style Speaking Practice – Units 1–4</h1>
+    <p class="subtitle">Short Part 1-style questions (about 15–25 seconds each).</p>
+    <p class="small-note">
+      Choose your unit, then answer the three questions in the prompt. Try to speak naturally and clearly.
+    </p>
 
-    <div class="meta-row">
-      <label>
-        Student ID
+    <div class="top-row">
+      <div>
+        <label for="studentId">Student ID</label>
         <input type="text" id="studentId" placeholder="e.g. 2412345" />
-      </label>
-      <label>
-        Class Code
-        <input type="text" id="classCode" value="E423" />
-      </label>
+      </div>
+      <div>
+        <label for="classCode">Class Code</label>
+        <input type="text" id="classCode" placeholder="e.g. E423" />
+      </div>
+      <div>
+        <label for="unitSelect">Unit (1–4)</label>
+        <select id="unitSelect">
+          <option value="1">Unit 1 – Animals</option>
+          <option value="2">Unit 2 – The Environment</option>
+          <option value="3" selected>Unit 3 – Transport</option>
+          <option value="4">Unit 4 – Customs &amp; Traditions</option>
+        </select>
+      </div>
     </div>
 
-    <div class="prompt-selector">
-      <button class="prompt-btn active" data-prompt="1">Prompt 1</button>
-      <button class="prompt-btn" data-prompt="2">Prompt 2</button>
-      <button class="prompt-btn" data-prompt="3">Prompt 3</button>
+    <!-- Prompt tabs -->
+    <div class="prompt-tabs">
+      <button id="prompt1Btn" class="prompt-tab active">Prompt 1</button>
+      <button id="prompt2Btn" class="prompt-tab">Prompt 2</button>
+      <button id="prompt3Btn" class="prompt-tab">Prompt 3</button>
     </div>
 
-    <div id="promptText" class="prompt-text">
-      Compare two ways to travel to college (for example, by bus and by car). Say:
-      • how they are similar
-      • how they are different
-      • which you prefer and why.
-    </div>
+    <!-- Prompt content (all three; CSS or your existing JS will show/hide as needed) -->
+    <div id="promptBox" class="prompt-box">
+      <!-- Prompt 1: default visible -->
+      <div class="prompt-panel" data-prompt="1">
+        <div class="prompt-heading">Prompt 1 – Animals &amp; Pets (Unit 1)</div>
+        <ol class="prompt-list">
+          <li>Do you have any pets? If yes, what are they like? If not, would you like to have one?</li>
+          <li>What animals are common in your country? Where do people usually see them?</li>
+          <li>Do you think it is better to see animals in zoos or in the wild? Why?</li>
+        </ol>
+      </div>
 
-    <div class="timer">
-      Time: <span id="timerDisplay">00:00</span>
-    </div>
+      <div class="prompt-panel" data-prompt="2" style="display:none;">
+        <div class="prompt-heading">Prompt 2 – The Environment (Unit 2)</div>
+        <ol class="prompt-list">
+          <li>Is the air and water in your city generally clean or dirty? Can you give an example?</li>
+          <li>What small things can people do every day to help the environment?</li>
+          <li>Do you think young people care more about the environment than older people? Why or why not?</li>
+        </ol>
+      </div>
 
-    <div class="controls">
-      <button id="recordBtn" class="record">Start Recording</button>
-      <button id="stopBtn" class="stop disabled">Stop</button>
-    </div>
-
-    <button id="playBtn" class="play disabled">Play Recording</button>
-    <audio id="audioPlayer" controls style="display:none;"></audio>
-
-    <button id="uploadBtn" class="upload disabled">Send to Teacher</button>
-
-    <div id="status" class="status"></div>
-
-    <div class="footer">
-      Your recording, unit, prompt number, student ID, class code, and time will be sent securely to your teacher.
-    </div>
-  </div>
-
-  <script>
-    // ====== CONFIG ======
-    const WEBHOOK_URL = "https://hook.eu2.make.com/mgiljprq2kdwb4my635a32iq5xwllgv8";
-    const UNIT_NAME = "Unit 3";
-
-    const prompts = {
-      1: "Compare two ways to travel to college (for example, by bus and by car). Say:\n• how they are similar\n• how they are different\n• which you prefer and why.",
-      2: "Make a suggestion to improve transport in your city or near your college. Say:\n• what the problem is\n• your suggestion\n• why it will help.",
-      3: "Use if/when to talk about future transport. Say:\n• what will happen if your city adds more buses or a metro\n• how this will change traffic\n• if there are any disadvantages."
-    };
-
-    // ====== DOM ELEMENTS ======
-    const promptButtons = document.querySelectorAll(".prompt-btn");
-    const promptTextEl = document.getElementById("promptText");
-    const timerDisplay = document.getElementById("timerDisplay");
-    const recordBtn = document.getElementById("recordBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const playBtn = document.getElementById("playBtn");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const statusEl = document.getElementById("status");
-    const studentIdInput = document.getElementById("studentId");
-    const classCodeInput = document.getElementById("classCode");
-    const audioPlayer = document.getElementById("audioPlayer");
-
-    // ====== STATE ======
-    let currentPrompt = 1;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let timerInterval = null;
-    let seconds = 0;
-    let recordedBlob = null;
-
-    // ====== PROMPT HANDLING ======
-    function setPrompt(promptNumber) {
-      currentPrompt = promptNumber;
-      promptButtons.forEach(btn => {
-        btn.classList.toggle("active", Number(btn.dataset.prompt) === promptNumber);
-      });
-      promptTextEl.textContent = prompts[promptNumber];
-    }
-
-    promptButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const p = Number(btn.dataset.prompt);
-        setPrompt(p);
-      });
-    });
-
-    // ====== TIMER ======
-    function startTimer() {
-      seconds = 0;
-      updateTimerDisplay();
-      timerInterval = setInterval(() => {
-        seconds++;
-        updateTimerDisplay();
-      }, 1000);
-    }
-
-    function stopTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-    }
-
-    function updateTimerDisplay() {
-      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
-      const secs = String(seconds % 60).padStart(2, "0");
-      timerDisplay.textContent = `${mins}:${secs}`;
-    }
-
-    // ====== RECORDING ======
-    async function startRecording() {
-      statusEl.textContent = "Requesting microphone access...";
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstart = () => {
-          statusEl.textContent = "Recording... speak now.";
-          recordBtn.classList.add("disabled");
-          recordBtn.disabled = true;
-
-          stopBtn.classList.remove("disabled");
-          stopBtn.disabled = false;
-
-          playBtn.classList.add("disabled");
-          playBtn.disabled = true;
-
-          uploadBtn.classList.add("disabled");
-          uploadBtn.disabled = true;
-
-          startTimer();
-        };
-
-        mediaRecorder.onstop = () => {
-          stopTimer();
-          recordedBlob = new Blob(audioChunks, { type: "audio/webm" });
-          const audioURL = URL.createObjectURL(recordedBlob);
-          audioPlayer.src = audioURL;
-          audioPlayer.style.display = "block";
-
-          statusEl.textContent = "Recording finished. You can listen or send it to your teacher.";
-
-          playBtn.classList.remove("disabled");
-          playBtn.disabled = false;
-
-          uploadBtn.classList.remove("disabled");
-          uploadBtn.disabled = false;
-
-          recordBtn.classList.remove("disabled");
-          recordBtn.disabled = false;
-        };
-
-        mediaRecorder.start();
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Microphone error. Please allow access in your browser settings.";
-      }
-    }
-
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        stopBtn.classList.add("disabled");
-        stopBtn.disabled = true;
-        statusEl.textContent = "Stopping...";
-      }
-    }
-
-    // ====== PLAYBACK ======
-    function playRecording() {
-      if (!recordedBlob) {
-        statusEl.textContent = "No recording yet.";
-        return;
-      }
-      audioPlayer.play().catch(err => {
-        console.error(err);
-        statusEl.textContent = "Cannot play audio. Try again.";
-      });
-    }
-
-    // ====== UPLOAD ======
-    async function uploadRecording() {
-      if (!recordedBlob) {
-        statusEl.textContent = "Please record something first.";
-        return;
-      }
-
-      const studentId = studentIdInput.value.trim() || "anonymous";
-      const classCode = classCodeInput.value.trim() || "unknown";
-      const now = new Date();
-      const timestamp = now.toISOString();
-
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      const hh = String(now.getHours()).padStart(2, "0");
-      const mm = String(now.getMinutes()).padStart(2, "0");
-      const ss = String(now.getSeconds()).padStart(2, "0");
-
-      const filename = `${studentId}_U3_P${currentPrompt}_${y}${m}${d}_${hh}${mm}${ss}.webm`;
-
-      const formData = new FormData();
-      formData.append("audio", recordedBlob, filename);
-      formData.append("filename", filename);
-      formData.append("unit", UNIT_NAME);
-      formData.append("promptNumber", String(currentPrompt));
-      formData.append("studentId", studentId);
-      formData.append("classCode", classCode);
-      formData.append("timestamp", timestamp);
-      formData.append("durationSeconds", String(seconds));
-
-      statusEl.textContent = "Uploading... please wait.";
-
-      uploadBtn.classList.add("disabled");
-      uploadBtn.disabled = true;
-
-      try {
-        const res = await fetch(WEBHOOK_URL, {
-          method: "POST",
-          body: formData
-        });
-
-        if (!res.ok) {
-          throw new Error("Upload failed with status " + res.status);
-        }
-
-        statusEl.textContent = "Uploaded successfully. Your teacher has received your recording.";
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Upload error. Please try again later.";
-        uploadBtn.classList.remove("disabled");
-        uploadBtn.disabled = false;
-      }
-    }
-
-    // ====== EVENT LISTENERS ======
-    recordBtn.addEventListener("click", startRecording);
-    stopBtn.addEventListener("click", stopRecording);
-    playBtn.addEventListener("click", playRecording);
-    uploadBtn.addEventListener("click", uploadRecording);
-  </script>
-</body>
-</html>
+      <div class="prompt-panel" data-prompt="3" style="display:none;">
+        <div class="prompt-heading">Prompt 3 – Transport &amp; Traditions (Units 3 &amp; 4)</div>
+        <ol class="prompt-list">
+          <li>How do you usually travel to college or work? Is this way of travelling convenient for you?</li>
+          <li>Are
