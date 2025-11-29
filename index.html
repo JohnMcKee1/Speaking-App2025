@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Speaking Practice – Unit 3</title>
+  <title>Speaking Practice – Assessment 1 (Units 1–4)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
@@ -44,6 +44,33 @@
       font-size: 1rem;
       font-weight: 500;
       color: #6b7280;
+    }
+
+    .top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin: 12px 0 4px;
+    }
+
+    .top-row label {
+      font-size: 0.85rem;
+      color: #4b5563;
+    }
+
+    select {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      outline: none;
+      background: #fff;
+    }
+
+    select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue-soft);
     }
 
     .meta-row {
@@ -108,9 +135,12 @@
       font-size: 0.95rem;
       line-height: 1.4;
       margin-bottom: 16px;
-      min-height: 72px;
-      display: flex;
-      align-items: center;
+      min-height: 80px;
+    }
+
+    .prompt-box ol {
+      margin: 0;
+      padding-left: 20px;
     }
 
     .timer {
@@ -123,7 +153,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     button {
@@ -157,373 +187,8 @@
       min-width: 150px;
     }
 
-    .btn-download {
+    .btn-upload {
       background: #3b82f6;
       color: #fff;
       flex: 1;
-      min-width: 150px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-    }
 
-    .btn-assess {
-      background: var(--purple);
-      color: #fff;
-      flex: 1;
-      min-width: 150px;
-    }
-
-    .btn-disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .meter-wrap {
-      width: 100%;
-      height: 10px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      overflow: hidden;
-      margin-bottom: 8px;
-    }
-
-    .meter-fill {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, #22c55e, #f97316, #ef4444);
-      transition: width 0.1s linear;
-    }
-
-    .status {
-      font-size: 0.85rem;
-      color: #4b5563;
-      min-height: 1.2em;
-      margin-bottom: 6px;
-    }
-
-    .feedback-box {
-      margin-top: 8px;
-      font-size: 0.85rem;
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: #eef2ff;
-      color: #312e81;
-      display: none;
-    }
-
-    .feedback-box strong {
-      display: block;
-      margin-bottom: 2px;
-    }
-
-    audio {
-      display: none;
-    }
-
-    .footer {
-      margin-top: 16px;
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <h1>Speaking Practice – Unit 3</h1>
-    <h2>Transport – Traffic, travel & suggestions</h2>
-
-    <div class="meta-row">
-      <label>
-        Student ID
-        <input type="text" id="studentId" placeholder="e.g. 2412345" />
-      </label>
-      <label>
-        Class Code
-        <input type="text" id="classCode" value="E423" />
-      </label>
-    </div>
-
-    <div class="prompt-tabs">
-      <button class="prompt-tab active" data-prompt="1">Prompt 1</button>
-      <button class="prompt-tab" data-prompt="2">Prompt 2</button>
-      <button class="prompt-tab" data-prompt="3">Prompt 3</button>
-    </div>
-
-    <div id="promptText" class="prompt-box">
-      Compare two ways to travel to college (for example, by bus and by car). Say:
-      • how they are similar
-      • how they are different
-      • which you prefer and why.
-    </div>
-
-    <div class="timer">
-      Time: <span id="timerDisplay">00:00</span>
-    </div>
-
-    <div class="controls-row">
-      <button id="startBtn" class="btn-record">Start Recording</button>
-      <button id="stopBtn" class="btn-stop btn-disabled" disabled>Stop</button>
-    </div>
-
-    <div class="controls-row">
-      <button id="playBtn" class="btn-play btn-disabled" disabled>Play Recording</button>
-      <a id="downloadBtn" class="btn-download btn-disabled" href="#" download disabled>Download Audio</a>
-      <button id="assessBtn" class="btn-assess btn-disabled" disabled>Assess Recording</button>
-    </div>
-
-    <div class="meter-wrap">
-      <div id="meterFill" class="meter-fill"></div>
-    </div>
-
-    <div id="status" class="status"></div>
-
-    <div id="feedback" class="feedback-box">
-      <strong>Quick feedback</strong>
-      <div id="feedbackText"></div>
-    </div>
-
-    <audio id="audioPlayer" controls></audio>
-
-    <div class="footer">
-      Your recording, unit, prompt number, student ID, class code, and time can be shared with your teacher.
-    </div>
-  </div>
-
-  <script>
-    // ===== PROMPTS (Unit 3 – Transport) =====
-    const PROMPTS = {
-      1: "Compare two ways to travel to college (for example, by bus and by car). Say:\n• how they are similar\n• how they are different\n• which you prefer and why.",
-      2: "Make a suggestion to improve transport in your city or near your college. Say:\n• what the problem is\n• your suggestion\n• why it will help.",
-      3: "Use if/when to talk about future transport. Say:\n• what will happen if your city adds more buses or a metro\n• how this will change traffic\n• if there are any disadvantages."
-    };
-
-    // ===== DOM ELEMENTS =====
-    const promptTabs = document.querySelectorAll(".prompt-tab");
-    const promptTextEl = document.getElementById("promptText");
-    const timerDisplay = document.getElementById("timerDisplay");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const playBtn = document.getElementById("playBtn");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const assessBtn = document.getElementById("assessBtn");
-    const meterFill = document.getElementById("meterFill");
-    const statusEl = document.getElementById("status");
-    const feedbackBox = document.getElementById("feedback");
-    const feedbackText = document.getElementById("feedbackText");
-    const audioPlayer = document.getElementById("audioPlayer");
-
-    // ===== STATE =====
-    let currentPrompt = 1;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let audioBlob = null;
-    let timerInterval = null;
-    let seconds = 0;
-    let audioCtx = null;
-    let analyser = null;
-    let rafId = null;
-
-    // ===== PROMPT SWITCHING =====
-    function setPrompt(num) {
-      currentPrompt = num;
-      promptTabs.forEach(btn => {
-        btn.classList.toggle("active", Number(btn.dataset.prompt) === num);
-      });
-      promptTextEl.textContent = PROMPTS[num];
-      feedbackBox.style.display = "none";
-    }
-
-    promptTabs.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const num = Number(btn.dataset.prompt);
-        setPrompt(num);
-      });
-    });
-
-    // ===== TIMER =====
-    function startTimer() {
-      seconds = 0;
-      updateTimerDisplay();
-      timerInterval = setInterval(() => {
-        seconds++;
-        updateTimerDisplay();
-      }, 1000);
-    }
-
-    function stopTimer() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-      }
-    }
-
-    function updateTimerDisplay() {
-      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
-      const secs = String(seconds % 60).padStart(2, "0");
-      timerDisplay.textContent = `${mins}:${secs}`;
-    }
-
-    // ===== AUDIO METER =====
-    function startMeter(stream) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioCtx.createMediaStreamSource(stream);
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
-      source.connect(analyser);
-
-      const data = new Uint8Array(analyser.frequencyBinCount);
-
-      const loop = () => {
-        analyser.getByteTimeDomainData(data);
-        let peak = 0;
-        for (let i = 0; i < data.length; i++) {
-          const v = Math.abs(data[i] - 128) / 128;
-          if (v > peak) peak = v;
-        }
-        const width = Math.min(100, Math.round(peak * 140));
-        meterFill.style.width = width + "%";
-        rafId = requestAnimationFrame(loop);
-      };
-      loop();
-    }
-
-    function stopMeter() {
-      if (rafId) cancelAnimationFrame(rafId);
-      meterFill.style.width = "0%";
-      if (audioCtx) {
-        audioCtx.close();
-        audioCtx = null;
-      }
-    }
-
-    // ===== RECORDING =====
-    async function startRecording() {
-      statusEl.textContent = "Requesting microphone access...";
-      feedbackBox.style.display = "none";
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        startMeter(stream);
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) audioChunks.push(e.data);
-        };
-
-        mediaRecorder.onstop = () => {
-          stopTimer();
-          stopMeter();
-
-          audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-          const url = URL.createObjectURL(audioBlob);
-          audioPlayer.src = url;
-
-          playBtn.disabled = false;
-          playBtn.classList.remove("btn-disabled");
-
-          downloadBtn.href = url;
-          const now = new Date();
-          const filename = `U3_P${currentPrompt}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}_${String(now.getHours()).padStart(2,"0")}${String(now.getMinutes()).padStart(2,"0")}.webm`;
-          downloadBtn.setAttribute("download", filename);
-          downloadBtn.classList.remove("btn-disabled");
-          downloadBtn.removeAttribute("disabled");
-
-          assessBtn.disabled = false;
-          assessBtn.classList.remove("btn-disabled");
-
-          statusEl.textContent = "Recording finished. You can listen, download, or assess it.";
-          stream.getTracks().forEach(t => t.stop());
-        };
-
-        mediaRecorder.start();
-        startTimer();
-
-        statusEl.textContent = "Recording... speak now.";
-        startBtn.disabled = true;
-        startBtn.classList.add("btn-disabled");
-
-        stopBtn.disabled = false;
-        stopBtn.classList.remove("btn-disabled");
-
-        playBtn.disabled = true;
-        playBtn.classList.add("btn-disabled");
-        downloadBtn.classList.add("btn-disabled");
-        assessBtn.classList.add("btn-disabled");
-        assessBtn.disabled = true;
-
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Microphone error. Please allow access in your browser settings.";
-      }
-    }
-
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        stopBtn.disabled = true;
-        stopBtn.classList.add("btn-disabled");
-        statusEl.textContent = "Stopping...";
-      }
-    }
-
-    function playRecording() {
-      if (!audioBlob) {
-        statusEl.textContent = "No recording yet.";
-        return;
-      }
-      audioPlayer.play().catch(err => {
-        console.error(err);
-        statusEl.textContent = "Unable to play audio.";
-      });
-    }
-
-    // ===== SIMPLE AUTO FEEDBACK (based on time) =====
-    function assessRecording() {
-      if (!audioBlob) {
-        statusEl.textContent = "Record something first.";
-        return;
-      }
-
-      const estWords = Math.round(seconds * 1.8); // ~110 wpm
-      let band = "A2–B1";
-      if (seconds >= 35) band = "B1";
-      if (seconds >= 55) band = "B1+";
-
-      const parts = [];
-      if (seconds < 25) {
-        parts.push("Try to speak for at least 30–40 seconds.");
-      } else {
-        parts.push("Good length. You are giving enough detail for the task.");
-      }
-
-      if (currentPrompt === 1) {
-        parts.push("Make sure you use at least one comparative (e.g. 'faster than', 'cheaper than').");
-      } else if (currentPrompt === 2) {
-        parts.push("Use a clear suggestion (e.g. 'we could', 'they should') and give one reason.");
-      } else if (currentPrompt === 3) {
-        parts.push("Use the first conditional (e.g. 'If the city adds more buses, traffic will be lighter').");
-      }
-
-      feedbackText.textContent =
-        `Estimated length: about ${estWords} words. Level focus: ${band}. ` +
-        parts.join(" ");
-
-      feedbackBox.style.display = "block";
-      statusEl.textContent = "Feedback based on your speaking time and the Unit 3 target language.";
-    }
-
-    // ===== EVENT LISTENERS =====
-    startBtn.addEventListener("click", startRecording);
-    stopBtn.addEventListener("click", stopRecording);
-    playBtn.addEventListener("click", playRecording);
-    assessBtn.addEventListener("click", assessRecording);
-
-    // init prompt
-    setPrompt(1);
-  </script>
-</body>
-</html>
