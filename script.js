@@ -353,4 +353,75 @@ clearBtn.addEventListener('click', ()=>{
 });
 
 /***** ATTEMPT PREVIEW + COPY *****/
-function updateAttemptPrev
+function updateAttemptPreview(latestReport){
+  const data = {
+    ts: new Date().toISOString(),
+    name: studentName.value || "",
+    id: studentId.value || "",
+    group: studentGroup.value || "",
+    unit: unitSelect.value,
+    level: levelSelect.value,
+    prompt: currentPrompt ? currentPrompt.text : "",
+    duration: timerEl.textContent,
+    audio: player && player.src ? player.src : "",
+    feedback: latestReport ? {
+      good: latestReport.good, next: latestReport.next,
+      cefr: latestReport.cefr, words: latestReport.len.words,
+      targetsHit: latestReport.targetsHit, targetsTotal: latestReport.targetsTotal
+    } : null
+  };
+  attemptPreview.textContent = JSON.stringify(data, null, 2);
+}
+copyBtn.addEventListener('click', ()=>{
+  navigator.clipboard.writeText(attemptPreview.textContent).then(()=> {
+    copyBtn.textContent = "Copied!";
+    setTimeout(()=>copyBtn.textContent="Copy", 1000);
+  });
+});
+
+/***** EVALUATION HEURISTICS (no transcript; use time as proxy + level tips) *****/
+function evaluateTwoLine(unit, prompt){
+  const seconds = readTimerSeconds();
+  const estWords = Math.round(seconds * 1.8); // ~110 wpm
+  const minWords = prompt.minWords || 40;
+
+  const targets = (unit.targets || []).concat(prompt.targets || []);
+  let targetsHit = 0;
+  if(seconds >= 25) targetsHit = 1;
+  if(seconds >= 40) targetsHit = 2;
+  if(seconds >= 60) targetsHit = Math.min(3, targets.length);
+
+  let cefr = "A2–B1";
+  if(seconds >= 35) cefr = "B1";
+  if(seconds >= 55) cefr = "B1+";
+
+  const strengths = [];
+  if(seconds >= 25) strengths.push("clear routine and enough detail");
+  if(seconds >= 35) strengths.push("good flow/organization");
+  const good = strengths.length ? capFirst(`What you did well: ${joinTwo(strengths)}.`)
+                                : "What you did well: understandable ideas — good start.";
+
+  const lvl = levelSelect.value;
+  const tips = [];
+  if(estWords < minWords) tips.push(`speak a bit longer to reach ${minWords}+ words`);
+  if(lvl === "easy") tips.push("add one signposting phrase (first/then)");
+  if(lvl === "medium") tips.push("add two signposts and one comparative");
+  if(lvl === "hard") tips.push("add a contrast signpost (however/whereas) and a reason (because/therefore)");
+  const next = capFirst(`Next step: ${joinTwo(tips)}.`);
+
+  return {
+    good, next, cefr,
+    len: { seconds, words: estWords },
+    targetsHit, targetsTotal: targets.length
+  };
+}
+function readTimerSeconds(){
+  const t = (timerEl.textContent || "00:00").split(":");
+  const mm = parseInt(t[0]||"0",10), ss = parseInt(t[1]||"0",10);
+  return mm*60 + ss;
+}
+
+/***** UTIL *****/
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function capFirst(s){ return s ? s[0].toUpperCase() + s.slice(1) : s; }
+function joinTwo(arr){ if(!arr.length) return ""; if(arr.length===1) return arr[0]; return `${arr[0]} and ${arr[1]}`; }
