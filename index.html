@@ -191,4 +191,464 @@
       background: #3b82f6;
       color: #fff;
       flex: 1;
+      min-width: 150px;
+    }
 
+    .btn-assess {
+      background: var(--purple);
+      color: #fff;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .btn-disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .status {
+      font-size: 0.85rem;
+      color: #4b5563;
+      min-height: 1.2em;
+      margin-bottom: 6px;
+    }
+
+    .feedback-box {
+      margin-top: 4px;
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #312e81;
+      display: none;
+    }
+
+    .feedback-box strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    audio {
+      display: none;
+    }
+
+    .footer {
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Speaking Practice – Assessment 1</h1>
+    <h2 id="unitSubtitle">Unit 1 – Animals (IELTS-style Part 1)</h2>
+
+    <div class="top-row">
+      <label>
+        Unit
+        <select id="unitSelect">
+          <option value="1">Unit 1 – Animals</option>
+          <option value="2">Unit 2 – The Environment</option>
+          <option value="3">Unit 3 – Transport</option>
+          <option value="4">Unit 4 – Customs & Traditions</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="meta-row">
+      <label>
+        Student ID
+        <input type="text" id="studentId" placeholder="e.g. 2412345" />
+      </label>
+      <label>
+        Class Code
+        <input type="text" id="classCode" value="E423" />
+      </label>
+    </div>
+
+    <div class="prompt-tabs">
+      <button class="prompt-tab active" data-prompt="1">Prompt 1</button>
+      <button class="prompt-tab" data-prompt="2">Prompt 2</button>
+      <button class="prompt-tab" data-prompt="3">Prompt 3</button>
+    </div>
+
+    <div id="promptText" class="prompt-box"></div>
+
+    <div class="timer">
+      Time: <span id="timerDisplay">00:00</span>
+    </div>
+
+    <div class="controls-row">
+      <button id="recordBtn" class="btn-record">Start Recording</button>
+      <button id="stopBtn" class="btn-stop btn-disabled" disabled>Stop</button>
+    </div>
+
+    <div class="controls-row">
+      <button id="playBtn" class="btn-play btn-disabled" disabled>Play Recording</button>
+      <button id="uploadBtn" class="btn-upload btn-disabled" disabled>Send to Teacher</button>
+      <button id="assessBtn" class="btn-assess btn-disabled" disabled>Assess Recording</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div id="feedback" class="feedback-box">
+      <strong>Automatic feedback</strong>
+      <div id="feedbackText"></div>
+    </div>
+
+    <audio id="audioPlayer" controls></audio>
+
+    <div class="footer">
+      Your recording, unit, prompt number, student ID, class code, and time will be sent securely to your teacher.
+    </div>
+  </div>
+
+  <script>
+    // ====== CONFIG ======
+    const WEBHOOK_URL = "https://hook.eu2.make.com/mgiljprq2kdwb4my635a32iq5xwllgv8";
+
+    // Units 1–4, each with 3 IELTS-style Part-1 questions per prompt
+    const UNITS = {
+      1: {
+        subtitle: "Unit 1 – Animals (IELTS-style Part 1)",
+        prompts: {
+          1: [
+            "Do you like animals? Why or why not?",
+            "Did you have any pets when you were a child?",
+            "Would you like to keep a pet in the future? Why?"
+          ],
+          2: [
+            "Do people in your country visit zoos?",
+            "Do you think zoos are good or bad for animals?",
+            "Should children learn about endangered animals at school?"
+          ],
+          3: [
+            "What wild animals live in your country?",
+            "Have you ever seen an endangered animal (on TV or in real life)?",
+            "What can people do to help protect animals?"
+          ]
+        }
+      },
+      2: {
+        subtitle: "Unit 2 – The Environment (IELTS-style Part 1)",
+        prompts: {
+          1: [
+            "Is the air in your city usually clean or polluted?",
+            "How do you feel about pollution in your country?",
+            "What can people do in daily life to reduce air pollution?"
+          ],
+          2: [
+            "Do you usually recycle things like paper or plastic?",
+            "Do you think recycling is easy to do?",
+            "Should the government do more to help people recycle?"
+          ],
+          3: [
+            "Do you like spending time in nature?",
+            "Are there many green spaces near your home?",
+            "How important is it for cities to have parks and trees?"
+          ]
+        }
+      },
+      3: {
+        subtitle: "Unit 3 – Transport (IELTS-style Part 1)",
+        prompts: {
+          1: [
+            "How do you usually travel to college or work?",
+            "Is public transport in your city convenient?",
+            "Which do you prefer, travelling by car or by bus? Why?"
+          ],
+          2: [
+            "Is traffic a problem where you live?",
+            "At what time of day is traffic the worst?",
+            "What could your city do to improve the traffic situation?"
+          ],
+          3: [
+            "Do you enjoy long journeys?",
+            "Do you prefer travelling alone or with other people?",
+            "Would you like to travel by train or metro more in the future? Why?"
+          ]
+        }
+      },
+      4: {
+        subtitle: "Unit 4 – Customs & Traditions (IELTS-style Part 1)",
+        prompts: {
+          1: [
+            "What is your favourite festival or celebration?",
+            "How do you usually celebrate it?",
+            "Did you celebrate it differently when you were a child?"
+          ],
+          2: [
+            "Do you think traditional food is important in your culture?",
+            "How often do you eat traditional food?",
+            "Should young people learn how to cook traditional dishes?"
+          ],
+          3: [
+            "Are there any traditional clothes in your country?",
+            "On what occasions do people wear them?",
+            "Do you think these traditions will continue in the future?"
+          ]
+        }
+      }
+    };
+
+    // ====== DOM ELEMENTS ======
+    const unitSelect = document.getElementById("unitSelect");
+    const unitSubtitle = document.getElementById("unitSubtitle");
+    const promptTabs = document.querySelectorAll(".prompt-tab");
+    const promptTextEl = document.getElementById("promptText");
+    const timerDisplay = document.getElementById("timerDisplay");
+    const recordBtn = document.getElementById("recordBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const playBtn = document.getElementById("playBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const assessBtn = document.getElementById("assessBtn");
+    const statusEl = document.getElementById("status");
+    const feedbackBox = document.getElementById("feedback");
+    const feedbackText = document.getElementById("feedbackText");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const studentIdInput = document.getElementById("studentId");
+    const classCodeInput = document.getElementById("classCode");
+
+    // ====== STATE ======
+    let currentUnit = 1;
+    let currentPrompt = 1;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordedBlob = null;
+    let timerInterval = null;
+    let seconds = 0;
+
+    // ====== PROMPTS & UNIT HANDLING ======
+    function renderPrompt() {
+      const unit = UNITS[currentUnit];
+      unitSubtitle.textContent = unit.subtitle;
+      const qs = unit.prompts[currentPrompt] || [];
+      promptTextEl.innerHTML =
+        "<ol>" + qs.map(q => `<li>${q}</li>`).join("") + "</ol>";
+      feedbackBox.style.display = "none";
+    }
+
+    unitSelect.addEventListener("change", () => {
+      currentUnit = Number(unitSelect.value);
+      renderPrompt();
+    });
+
+    promptTabs.forEach(btn => {
+      btn.addEventListener("click", () => {
+        currentPrompt = Number(btn.dataset.prompt);
+        promptTabs.forEach(b =>
+          b.classList.toggle("active", Number(b.dataset.prompt) === currentPrompt)
+        );
+        renderPrompt();
+      });
+    });
+
+    // ====== TIMER ======
+    function startTimer() {
+      seconds = 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        seconds++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const secs = String(seconds % 60).padStart(2, "0");
+      timerDisplay.textContent = `${mins}:${secs}`;
+    }
+
+    // ====== RECORDING ======
+    async function startRecording() {
+      statusEl.textContent = "Requesting microphone access...";
+      feedbackBox.style.display = "none";
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          stopTimer();
+          recordedBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const audioURL = URL.createObjectURL(recordedBlob);
+          audioPlayer.src = audioURL;
+
+          playBtn.disabled = false;
+          playBtn.classList.remove("btn-disabled");
+
+          uploadBtn.disabled = false;
+          uploadBtn.classList.remove("btn-disabled");
+
+          assessBtn.disabled = false;
+          assessBtn.classList.remove("btn-disabled");
+
+          statusEl.textContent = "Recording finished. You can listen, send it, or get feedback.";
+          stream.getTracks().forEach(t => t.stop());
+        };
+
+        mediaRecorder.start();
+        startTimer();
+
+        statusEl.textContent = "Recording... answer the three questions.";
+        recordBtn.disabled = true;
+        recordBtn.classList.add("btn-disabled");
+
+        stopBtn.disabled = false;
+        stopBtn.classList.remove("btn-disabled");
+
+        playBtn.disabled = true;
+        playBtn.classList.add("btn-disabled");
+        uploadBtn.disabled = true;
+        uploadBtn.classList.add("btn-disabled");
+        assessBtn.disabled = true;
+        assessBtn.classList.add("btn-disabled");
+
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Microphone error. Please allow access in your browser settings.";
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        stopBtn.disabled = true;
+        stopBtn.classList.add("btn-disabled");
+        statusEl.textContent = "Stopping...";
+        recordBtn.disabled = false;
+        recordBtn.classList.remove("btn-disabled");
+      }
+    }
+
+    function playRecording() {
+      if (!recordedBlob) {
+        statusEl.textContent = "No recording yet.";
+        return;
+      }
+      audioPlayer.play().catch(err => {
+        console.error(err);
+        statusEl.textContent = "Cannot play audio. Try again.";
+      });
+    }
+
+    // ====== UPLOAD TO TEACHER ======
+    async function uploadRecording() {
+      if (!recordedBlob) {
+        statusEl.textContent = "Please record something first.";
+        return;
+      }
+
+      const studentId = studentIdInput.value.trim() || "anonymous";
+      const classCode = classCodeInput.value.trim() || "unknown";
+      const now = new Date();
+      const timestamp = now.toISOString();
+
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+
+      const filename = `${studentId}_U${currentUnit}_P${currentPrompt}_${y}${m}${d}_${hh}${mm}${ss}.webm`;
+
+      const formData = new FormData();
+      formData.append("audio", recordedBlob, filename);
+      formData.append("filename", filename);
+      formData.append("unit", `Unit ${currentUnit}`);
+      formData.append("promptNumber", String(currentPrompt));
+      formData.append("studentId", studentId);
+      formData.append("classCode", classCode);
+      formData.append("timestamp", timestamp);
+      formData.append("durationSeconds", String(seconds));
+
+      statusEl.textContent = "Uploading... please wait.";
+
+      uploadBtn.disabled = true;
+      uploadBtn.classList.add("btn-disabled");
+
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          body: formData
+        });
+
+        if (!res.ok) throw new Error("Upload failed with status " + res.status);
+
+        statusEl.textContent = "Uploaded successfully. Your teacher has received your recording.";
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Upload error. Please try again later.";
+        uploadBtn.disabled = false;
+        uploadBtn.classList.remove("btn-disabled");
+      }
+    }
+
+    // ====== SIMPLE ASSESSMENT (HEURISTIC) ======
+    function assessRecording() {
+      if (!recordedBlob) {
+        statusEl.textContent = "Please record something first.";
+        return;
+      }
+
+      const estWords = Math.round(seconds * 1.8); // ~110 wpm
+      let band = "A2–B1";
+      if (seconds >= 35) band = "B1";
+      if (seconds >= 55) band = "B1+";
+
+      const comments = [];
+
+      // Length
+      if (seconds < 12) {
+        comments.push("Try to speak for a little longer (aim for 15–25 seconds).");
+      } else if (seconds <= 30) {
+        comments.push("Good length for this task. You are giving enough detail.");
+      } else {
+        comments.push("Excellent length. Make sure you stay focused on the three questions.");
+      }
+
+      // Unit-specific hint
+      if (currentUnit === 1) {
+        comments.push("Check that you answered all three animal questions and used past/present correctly.");
+      } else if (currentUnit === 2) {
+        comments.push("Try to include one cause and one effect when talking about the environment.");
+      } else if (currentUnit === 3) {
+        comments.push("Use at least one comparative when you talk about different types of transport.");
+      } else if (currentUnit === 4) {
+        comments.push("Add time expressions (usually / often / every year) when describing customs.");
+      }
+
+      feedbackText.textContent =
+        `Estimated length: about ${estWords} words. Level focus: ${band}. ` +
+        comments.join(" ");
+
+      feedbackBox.style.display = "block";
+      statusEl.textContent = "Feedback is based on your speaking time and the unit focus.";
+    }
+
+    // ====== EVENT LISTENERS ======
+    recordBtn.addEventListener("click", startRecording);
+    stopBtn.addEventListener("click", stopRecording);
+    playBtn.addEventListener("click", playRecording);
+    uploadBtn.addEventListener("click", uploadRecording);
+    assessBtn.addEventListener("click", assessRecording);
+
+    // Initial render
+    renderPrompt();
+  </script>
+</body>
+</html>
