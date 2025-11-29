@@ -5,161 +5,228 @@
   <title>Speaking Practice – Unit 3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      --blue: #2563eb;
+      --blue-soft: #e0ecff;
+      --red: #dc2626;
+      --yellow: #fbbf24;
+      --green: #16a34a;
+      --purple: #a855f7;
+      --grey: #e5e7eb;
+      --text: #111827;
+    }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
-      padding: 16px;
-      background: #f4f4f8;
-      color: #222;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: var(--text);
     }
 
     .app {
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
       background: #ffffff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      border-radius: 18px;
+      padding: 24px 28px 28px;
+      box-shadow: 0 10px 25px rgba(15,23,42,0.12);
     }
 
     h1 {
-      font-size: 1.5rem;
-      margin-bottom: 4px;
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
     }
 
     h2 {
-      font-size: 1.1rem;
-      margin-top: 0;
-      color: #555;
+      margin: 4px 0 16px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #6b7280;
     }
 
     .meta-row {
       display: flex;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .meta-row label {
-      font-size: 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      flex: 1;
-      min-width: 120px;
-    }
-
-    input[type="text"] {
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 0.9rem;
-    }
-
-    .prompt-selector {
-      display: flex;
-      gap: 8px;
-      margin: 12px 0;
-      flex-wrap: wrap;
-    }
-
-    .prompt-btn {
-      flex: 1;
-      min-width: 70px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid #ccc;
-      background: #f0f0f5;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .prompt-btn.active {
-      background: #2563eb;
-      color: white;
-      border-color: #2563eb;
-    }
-
-    .prompt-text {
-      background: #fafafa;
-      border-radius: 12px;
-      padding: 10px 12px;
-      border: 1px solid #e0e0e0;
-      font-size: 0.95rem;
-      line-height: 1.4;
       margin-bottom: 16px;
     }
 
-    .controls {
+    .meta-row label {
+      flex: 1;
+      min-width: 180px;
+      font-size: 0.85rem;
+      color: #4b5563;
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    input[type="text"] {
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue-soft);
+    }
+
+    .prompt-tabs {
+      display: flex;
       gap: 8px;
       margin-bottom: 12px;
+    }
+
+    .prompt-tab {
+      flex: 1;
+      min-width: 90px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .prompt-tab.active {
+      background: var(--blue);
+      color: white;
+    }
+
+    .prompt-box {
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      padding: 12px 14px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      margin-bottom: 16px;
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+    }
+
+    .timer {
+      font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     button {
       border: none;
       border-radius: 999px;
-      padding: 10px 14px;
+      padding: 10px 16px;
       font-size: 0.95rem;
+      font-weight: 500;
       cursor: pointer;
+      white-space: nowrap;
     }
 
-    .record {
-      background: #dc2626;
-      color: white;
+    .btn-record {
+      background: var(--red);
+      color: #fff;
       flex: 1;
-      min-width: 140px;
+      min-width: 150px;
     }
 
-    .stop {
-      background: #fbbf24;
-      color: #222;
+    .btn-stop {
+      background: var(--yellow);
+      color: #1f2937;
       flex: 1;
-      min-width: 140px;
+      min-width: 150px;
     }
 
-    .play {
-      background: #16a34a;
-      color: white;
+    .btn-play {
+      background: var(--green);
+      color: #fff;
       flex: 1;
-      min-width: 140px;
+      min-width: 150px;
     }
 
-    .upload {
-      background: #2563eb;
-      color: white;
+    .btn-download {
+      background: #3b82f6;
+      color: #fff;
       flex: 1;
-      min-width: 140px;
+      min-width: 150px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    .disabled {
-      opacity: 0.5;
+    .btn-assess {
+      background: var(--purple);
+      color: #fff;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .btn-disabled {
+      opacity: 0.45;
       cursor: not-allowed;
     }
 
-    .timer {
-      font-family: "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 1rem;
+    .meter-wrap {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
       margin-bottom: 8px;
+    }
+
+    .meter-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #f97316, #ef4444);
+      transition: width 0.1s linear;
     }
 
     .status {
       font-size: 0.85rem;
-      color: #555;
+      color: #4b5563;
       min-height: 1.2em;
-      margin-top: 4px;
+      margin-bottom: 6px;
+    }
+
+    .feedback-box {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #312e81;
+      display: none;
+    }
+
+    .feedback-box strong {
+      display: block;
+      margin-bottom: 2px;
     }
 
     audio {
-      width: 100%;
-      margin-top: 8px;
+      display: none;
     }
 
     .footer {
       margin-top: 16px;
       font-size: 0.75rem;
-      color: #777;
+      color: #6b7280;
     }
   </style>
 </head>
@@ -179,13 +246,13 @@
       </label>
     </div>
 
-    <div class="prompt-selector">
-      <button class="prompt-btn active" data-prompt="1">Prompt 1</button>
-      <button class="prompt-btn" data-prompt="2">Prompt 2</button>
-      <button class="prompt-btn" data-prompt="3">Prompt 3</button>
+    <div class="prompt-tabs">
+      <button class="prompt-tab active" data-prompt="1">Prompt 1</button>
+      <button class="prompt-tab" data-prompt="2">Prompt 2</button>
+      <button class="prompt-tab" data-prompt="3">Prompt 3</button>
     </div>
 
-    <div id="promptText" class="prompt-text">
+    <div id="promptText" class="prompt-box">
       Compare two ways to travel to college (for example, by bus and by car). Say:
       • how they are similar
       • how they are different
@@ -196,72 +263,87 @@
       Time: <span id="timerDisplay">00:00</span>
     </div>
 
-    <div class="controls">
-      <button id="recordBtn" class="record">Start Recording</button>
-      <button id="stopBtn" class="stop disabled">Stop</button>
+    <div class="controls-row">
+      <button id="startBtn" class="btn-record">Start Recording</button>
+      <button id="stopBtn" class="btn-stop btn-disabled" disabled>Stop</button>
     </div>
 
-    <button id="playBtn" class="play disabled">Play Recording</button>
-    <audio id="audioPlayer" controls style="display:none;"></audio>
+    <div class="controls-row">
+      <button id="playBtn" class="btn-play btn-disabled" disabled>Play Recording</button>
+      <a id="downloadBtn" class="btn-download btn-disabled" href="#" download disabled>Download Audio</a>
+      <button id="assessBtn" class="btn-assess btn-disabled" disabled>Assess Recording</button>
+    </div>
 
-    <button id="uploadBtn" class="upload disabled">Send to Teacher</button>
+    <div class="meter-wrap">
+      <div id="meterFill" class="meter-fill"></div>
+    </div>
 
     <div id="status" class="status"></div>
 
+    <div id="feedback" class="feedback-box">
+      <strong>Quick feedback</strong>
+      <div id="feedbackText"></div>
+    </div>
+
+    <audio id="audioPlayer" controls></audio>
+
     <div class="footer">
-      Your recording, unit, prompt number, student ID, class code, and time will be sent securely to your teacher.
+      Your recording, unit, prompt number, student ID, class code, and time can be shared with your teacher.
     </div>
   </div>
 
   <script>
-    // ====== CONFIG ======
-    const WEBHOOK_URL = "https://hook.eu2.make.com/mgiljprq2kdwb4my635a32iq5xwllgv8";
-    const UNIT_NAME = "Unit 3";
-
-    const prompts = {
+    // ===== PROMPTS (Unit 3 – Transport) =====
+    const PROMPTS = {
       1: "Compare two ways to travel to college (for example, by bus and by car). Say:\n• how they are similar\n• how they are different\n• which you prefer and why.",
       2: "Make a suggestion to improve transport in your city or near your college. Say:\n• what the problem is\n• your suggestion\n• why it will help.",
       3: "Use if/when to talk about future transport. Say:\n• what will happen if your city adds more buses or a metro\n• how this will change traffic\n• if there are any disadvantages."
     };
 
-    // ====== DOM ELEMENTS ======
-    const promptButtons = document.querySelectorAll(".prompt-btn");
+    // ===== DOM ELEMENTS =====
+    const promptTabs = document.querySelectorAll(".prompt-tab");
     const promptTextEl = document.getElementById("promptText");
     const timerDisplay = document.getElementById("timerDisplay");
-    const recordBtn = document.getElementById("recordBtn");
+    const startBtn = document.getElementById("startBtn");
     const stopBtn = document.getElementById("stopBtn");
     const playBtn = document.getElementById("playBtn");
-    const uploadBtn = document.getElementById("uploadBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const assessBtn = document.getElementById("assessBtn");
+    const meterFill = document.getElementById("meterFill");
     const statusEl = document.getElementById("status");
-    const studentIdInput = document.getElementById("studentId");
-    const classCodeInput = document.getElementById("classCode");
+    const feedbackBox = document.getElementById("feedback");
+    const feedbackText = document.getElementById("feedbackText");
     const audioPlayer = document.getElementById("audioPlayer");
 
-    // ====== STATE ======
+    // ===== STATE =====
     let currentPrompt = 1;
     let mediaRecorder = null;
     let audioChunks = [];
+    let audioBlob = null;
     let timerInterval = null;
     let seconds = 0;
-    let recordedBlob = null;
+    let audioCtx = null;
+    let analyser = null;
+    let rafId = null;
 
-    // ====== PROMPT HANDLING ======
-    function setPrompt(promptNumber) {
-      currentPrompt = promptNumber;
-      promptButtons.forEach(btn => {
-        btn.classList.toggle("active", Number(btn.dataset.prompt) === promptNumber);
+    // ===== PROMPT SWITCHING =====
+    function setPrompt(num) {
+      currentPrompt = num;
+      promptTabs.forEach(btn => {
+        btn.classList.toggle("active", Number(btn.dataset.prompt) === num);
       });
-      promptTextEl.textContent = prompts[promptNumber];
+      promptTextEl.textContent = PROMPTS[num];
+      feedbackBox.style.display = "none";
     }
 
-    promptButtons.forEach(btn => {
+    promptTabs.forEach(btn => {
       btn.addEventListener("click", () => {
-        const p = Number(btn.dataset.prompt);
-        setPrompt(p);
+        const num = Number(btn.dataset.prompt);
+        setPrompt(num);
       });
     });
 
-    // ====== TIMER ======
+    // ===== TIMER =====
     function startTimer() {
       seconds = 0;
       updateTimerDisplay();
@@ -284,57 +366,95 @@
       timerDisplay.textContent = `${mins}:${secs}`;
     }
 
-    // ====== RECORDING ======
+    // ===== AUDIO METER =====
+    function startMeter(stream) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+
+      const data = new Uint8Array(analyser.frequencyBinCount);
+
+      const loop = () => {
+        analyser.getByteTimeDomainData(data);
+        let peak = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = Math.abs(data[i] - 128) / 128;
+          if (v > peak) peak = v;
+        }
+        const width = Math.min(100, Math.round(peak * 140));
+        meterFill.style.width = width + "%";
+        rafId = requestAnimationFrame(loop);
+      };
+      loop();
+    }
+
+    function stopMeter() {
+      if (rafId) cancelAnimationFrame(rafId);
+      meterFill.style.width = "0%";
+      if (audioCtx) {
+        audioCtx.close();
+        audioCtx = null;
+      }
+    }
+
+    // ===== RECORDING =====
     async function startRecording() {
       statusEl.textContent = "Requesting microphone access...";
+      feedbackBox.style.display = "none";
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
+        startMeter(stream);
 
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstart = () => {
-          statusEl.textContent = "Recording... speak now.";
-          recordBtn.classList.add("disabled");
-          recordBtn.disabled = true;
-
-          stopBtn.classList.remove("disabled");
-          stopBtn.disabled = false;
-
-          playBtn.classList.add("disabled");
-          playBtn.disabled = true;
-
-          uploadBtn.classList.add("disabled");
-          uploadBtn.disabled = true;
-
-          startTimer();
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunks.push(e.data);
         };
 
         mediaRecorder.onstop = () => {
           stopTimer();
-          recordedBlob = new Blob(audioChunks, { type: "audio/webm" });
-          const audioURL = URL.createObjectURL(recordedBlob);
-          audioPlayer.src = audioURL;
-          audioPlayer.style.display = "block";
+          stopMeter();
 
-          statusEl.textContent = "Recording finished. You can listen or send it to your teacher.";
+          audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const url = URL.createObjectURL(audioBlob);
+          audioPlayer.src = url;
 
-          playBtn.classList.remove("disabled");
           playBtn.disabled = false;
+          playBtn.classList.remove("btn-disabled");
 
-          uploadBtn.classList.remove("disabled");
-          uploadBtn.disabled = false;
+          downloadBtn.href = url;
+          const now = new Date();
+          const filename = `U3_P${currentPrompt}_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}_${String(now.getHours()).padStart(2,"0")}${String(now.getMinutes()).padStart(2,"0")}.webm`;
+          downloadBtn.setAttribute("download", filename);
+          downloadBtn.classList.remove("btn-disabled");
+          downloadBtn.removeAttribute("disabled");
 
-          recordBtn.classList.remove("disabled");
-          recordBtn.disabled = false;
+          assessBtn.disabled = false;
+          assessBtn.classList.remove("btn-disabled");
+
+          statusEl.textContent = "Recording finished. You can listen, download, or assess it.";
+          stream.getTracks().forEach(t => t.stop());
         };
 
         mediaRecorder.start();
+        startTimer();
+
+        statusEl.textContent = "Recording... speak now.";
+        startBtn.disabled = true;
+        startBtn.classList.add("btn-disabled");
+
+        stopBtn.disabled = false;
+        stopBtn.classList.remove("btn-disabled");
+
+        playBtn.disabled = true;
+        playBtn.classList.add("btn-disabled");
+        downloadBtn.classList.add("btn-disabled");
+        assessBtn.classList.add("btn-disabled");
+        assessBtn.disabled = true;
+
       } catch (err) {
         console.error(err);
         statusEl.textContent = "Microphone error. Please allow access in your browser settings.";
@@ -344,85 +464,66 @@
     function stopRecording() {
       if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
-        stopBtn.classList.add("disabled");
         stopBtn.disabled = true;
+        stopBtn.classList.add("btn-disabled");
         statusEl.textContent = "Stopping...";
       }
     }
 
-    // ====== PLAYBACK ======
     function playRecording() {
-      if (!recordedBlob) {
+      if (!audioBlob) {
         statusEl.textContent = "No recording yet.";
         return;
       }
       audioPlayer.play().catch(err => {
         console.error(err);
-        statusEl.textContent = "Cannot play audio. Try again.";
+        statusEl.textContent = "Unable to play audio.";
       });
     }
 
-    // ====== UPLOAD ======
-    async function uploadRecording() {
-      if (!recordedBlob) {
-        statusEl.textContent = "Please record something first.";
+    // ===== SIMPLE AUTO FEEDBACK (based on time) =====
+    function assessRecording() {
+      if (!audioBlob) {
+        statusEl.textContent = "Record something first.";
         return;
       }
 
-      const studentId = studentIdInput.value.trim() || "anonymous";
-      const classCode = classCodeInput.value.trim() || "unknown";
-      const now = new Date();
-      const timestamp = now.toISOString();
+      const estWords = Math.round(seconds * 1.8); // ~110 wpm
+      let band = "A2–B1";
+      if (seconds >= 35) band = "B1";
+      if (seconds >= 55) band = "B1+";
 
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      const hh = String(now.getHours()).padStart(2, "0");
-      const mm = String(now.getMinutes()).padStart(2, "0");
-      const ss = String(now.getSeconds()).padStart(2, "0");
-
-      const filename = `${studentId}_U3_P${currentPrompt}_${y}${m}${d}_${hh}${mm}${ss}.webm`;
-
-      const formData = new FormData();
-      formData.append("audio", recordedBlob, filename);
-      formData.append("filename", filename);
-      formData.append("unit", UNIT_NAME);
-      formData.append("promptNumber", String(currentPrompt));
-      formData.append("studentId", studentId);
-      formData.append("classCode", classCode);
-      formData.append("timestamp", timestamp);
-      formData.append("durationSeconds", String(seconds));
-
-      statusEl.textContent = "Uploading... please wait.";
-
-      uploadBtn.classList.add("disabled");
-      uploadBtn.disabled = true;
-
-      try {
-        const res = await fetch(WEBHOOK_URL, {
-          method: "POST",
-          body: formData
-        });
-
-        if (!res.ok) {
-          throw new Error("Upload failed with status " + res.status);
-        }
-
-        statusEl.textContent = "Uploaded successfully. Your teacher has received your recording.";
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "Upload error. Please try again later.";
-        uploadBtn.classList.remove("disabled");
-        uploadBtn.disabled = false;
+      const parts = [];
+      if (seconds < 25) {
+        parts.push("Try to speak for at least 30–40 seconds.");
+      } else {
+        parts.push("Good length. You are giving enough detail for the task.");
       }
+
+      if (currentPrompt === 1) {
+        parts.push("Make sure you use at least one comparative (e.g. 'faster than', 'cheaper than').");
+      } else if (currentPrompt === 2) {
+        parts.push("Use a clear suggestion (e.g. 'we could', 'they should') and give one reason.");
+      } else if (currentPrompt === 3) {
+        parts.push("Use the first conditional (e.g. 'If the city adds more buses, traffic will be lighter').");
+      }
+
+      feedbackText.textContent =
+        `Estimated length: about ${estWords} words. Level focus: ${band}. ` +
+        parts.join(" ");
+
+      feedbackBox.style.display = "block";
+      statusEl.textContent = "Feedback based on your speaking time and the Unit 3 target language.";
     }
 
-    // ====== EVENT LISTENERS ======
-    recordBtn.addEventListener("click", startRecording);
+    // ===== EVENT LISTENERS =====
+    startBtn.addEventListener("click", startRecording);
     stopBtn.addEventListener("click", stopRecording);
     playBtn.addEventListener("click", playRecording);
-    uploadBtn.addEventListener("click", uploadRecording);
+    assessBtn.addEventListener("click", assessRecording);
+
+    // init prompt
+    setPrompt(1);
   </script>
 </body>
 </html>
-
