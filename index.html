@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Speaking Practice – Unit 2</title>
+  <title>Speaking Practice – Unit 3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -132,22 +132,6 @@
       flex: 1;
       min-width: 140px;
     }
-    .feedback {
-      background: #7600FC;
-      color: white;
-      flex: 1;
-      min-width: 140px;
-    }
-    .feedback-text {
-      background: #fafafa;
-      border-radius: 12px;
-      padding: 10px 12px;
-      border: 1px solid #e0e0e0;
-      font-size: 0.95rem;
-      line-height: 1.4;
-      margin-top: 16px;
-      margin-bottom: 16px;
-    }
 
     .disabled {
       opacity: 0.5;
@@ -181,8 +165,8 @@
 </head>
 <body>
   <div class="app">
-    <h1>Speaking Practice – Unit 2</h1>
-    <h2>The Environment</h2>
+    <h1>Speaking Practice – Unit 3</h1>
+    <h2>Transport – Traffic, travel & suggestions</h2>
 
     <div class="meta-row">
       <label>
@@ -192,6 +176,7 @@
       <label>
         Class Code
         <input type="text" id="classCode" value="E423" />
+      </label>
     </div>
 
     <div class="prompt-selector">
@@ -201,10 +186,10 @@
     </div>
 
     <div id="promptText" class="prompt-text">
-      Talk about an endangered animal. Say:
-      • where it lives  
-      • why it is at risk  
-      • what people can do to protect it.
+      Compare two ways to travel to college (for example, by bus and by car). Say:
+      • how they are similar
+      • how they are different
+      • which you prefer and why.
     </div>
 
     <div class="timer">
@@ -219,11 +204,9 @@
     <button id="playBtn" class="play disabled">Play Recording</button>
     <audio id="audioPlayer" controls style="display:none;"></audio>
 
-    <button id="uploadBtn" class="upload disabled">Download Audio</button>
-    <button id="feedbackBtn" class="feedback disabled">Assess Recording</button>
-    <div id="feedbackText" class="feedback-text"></div>
-    <div id="status" class="status"></div>
+    <button id="uploadBtn" class="upload disabled">Send to Teacher</button>
 
+    <div id="status" class="status"></div>
 
     <div class="footer">
       Your recording, unit, prompt number, student ID, class code, and time will be sent securely to your teacher.
@@ -231,401 +214,214 @@
   </div>
 
   <script>
-// ====== CONFIG ======
-const WEBHOOK_URL = "https://hook.eu2.make.com/mgiljprq2kdwb4my635a32iq5xwllgv8";
-const UNIT_NAME = "Unit 2";
-  
-const prompts = {
-  1: "Give one cause and one effect of air pollution in your city. Include 'because' or 'because of'.",
-  2: "Explain why recycling matters and discuss one advantage and one disadvantage.",
-  3: "Argue for a local policy to reduce emissions. Use at least two signposts and one contrast."
-};
+    // ====== CONFIG ======
+    const WEBHOOK_URL = "https://hook.eu2.make.com/mgiljprq2kdwb4my635a32iq5xwllgv8";
+    const UNIT_NAME = "Unit 3";
 
-// ====== DOM ELEMENTS ======
-const promptButtons = document.querySelectorAll(".prompt-btn");
-const promptTextEl = document.getElementById("promptText");
-const timerDisplay = document.getElementById("timerDisplay");
-const recordBtn = document.getElementById("recordBtn");
-const stopBtn = document.getElementById("stopBtn");
-const playBtn = document.getElementById("playBtn");
-const uploadBtn = document.getElementById("uploadBtn");
-const feedbackBtn = document.getElementById("feedbackBtn");
-const feedbackText = document.getElementById("feedbackText");
-const statusEl = document.getElementById("status");
-const studentIdInput = document.getElementById("studentId");
-const classCodeInput = document.getElementById("classCode");
-const audioPlayer = document.getElementById("audioPlayer");
-
-// ====== STATE ======
-let currentPrompt = 1;
-let mediaRecorder = null;
-let audioChunks = [];
-let timerInterval = null;
-let seconds = 0;
-let recordedBlob = null;
-let studentId = null;
-let classCode = null;
-
-// ====== PROMPT HANDLING ======
-function setPrompt(promptNumber) {
-  currentPrompt = promptNumber;
-  promptButtons.forEach(btn => {
-    btn.classList.toggle("active", Number(btn.dataset.prompt) === promptNumber);
-  });
-  promptTextEl.textContent = prompts[promptNumber];
-}
-
-promptButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const p = Number(btn.dataset.prompt);
-    setPrompt(p);
-  });
-});
-
-// ====== TIMER ======
-function startTimer() {
-  seconds = 0;
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    seconds++;
-    updateTimerDisplay();
-  }, 1000);
-}
-
-function stopTimer() {
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
-}
-
-function updateTimerDisplay() {
-  const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
-  const secs = String(seconds % 60).padStart(2, "0");
-  timerDisplay.textContent = `${mins}:${secs}`;
-}
-
-// ====== RECORDING ======
-async function startRecording() {
-  statusEl.textContent = "Requesting microphone access...";
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    
-    // Try to use a more compatible format
-    const options = { 
-      audioBitsPerSecond: 128000,
-      mimeType: 'audio/webm;codecs=opus'
+    const prompts = {
+      1: "Compare two ways to travel to college (for example, by bus and by car). Say:\n• how they are similar\n• how they are different\n• which you prefer and why.",
+      2: "Make a suggestion to improve transport in your city or near your college. Say:\n• what the problem is\n• your suggestion\n• why it will help.",
+      3: "Use if/when to talk about future transport. Say:\n• what will happen if your city adds more buses or a metro\n• how this will change traffic\n• if there are any disadvantages."
     };
-    
-    // Fallback if opus isn't supported
-    if (!MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-      options.mimeType = 'audio/webm';
+
+    // ====== DOM ELEMENTS ======
+    const promptButtons = document.querySelectorAll(".prompt-btn");
+    const promptTextEl = document.getElementById("promptText");
+    const timerDisplay = document.getElementById("timerDisplay");
+    const recordBtn = document.getElementById("recordBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const playBtn = document.getElementById("playBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const statusEl = document.getElementById("status");
+    const studentIdInput = document.getElementById("studentId");
+    const classCodeInput = document.getElementById("classCode");
+    const audioPlayer = document.getElementById("audioPlayer");
+
+    // ====== STATE ======
+    let currentPrompt = 1;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let timerInterval = null;
+    let seconds = 0;
+    let recordedBlob = null;
+
+    // ====== PROMPT HANDLING ======
+    function setPrompt(promptNumber) {
+      currentPrompt = promptNumber;
+      promptButtons.forEach(btn => {
+        btn.classList.toggle("active", Number(btn.dataset.prompt) === promptNumber);
+      });
+      promptTextEl.textContent = prompts[promptNumber];
     }
-    
-    mediaRecorder = new MediaRecorder(stream, options);
-    audioChunks = [];
 
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.push(event.data);
+    promptButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const p = Number(btn.dataset.prompt);
+        setPrompt(p);
+      });
+    });
+
+    // ====== TIMER ======
+    function startTimer() {
+      seconds = 0;
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        seconds++;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
       }
-    };
+    }
 
-    mediaRecorder.onstart = () => {
-      statusEl.textContent = "Recording... speak now.";
-      recordBtn.classList.add("disabled");
-      recordBtn.disabled = true;
+    function updateTimerDisplay() {
+      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const secs = String(seconds % 60).padStart(2, "0");
+      timerDisplay.textContent = `${mins}:${secs}`;
+    }
 
-      stopBtn.classList.remove("disabled");
-      stopBtn.disabled = false;
+    // ====== RECORDING ======
+    async function startRecording() {
+      statusEl.textContent = "Requesting microphone access...";
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
 
-      playBtn.classList.add("disabled");
-      playBtn.disabled = true;
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstart = () => {
+          statusEl.textContent = "Recording... speak now.";
+          recordBtn.classList.add("disabled");
+          recordBtn.disabled = true;
+
+          stopBtn.classList.remove("disabled");
+          stopBtn.disabled = false;
+
+          playBtn.classList.add("disabled");
+          playBtn.disabled = true;
+
+          uploadBtn.classList.add("disabled");
+          uploadBtn.disabled = true;
+
+          startTimer();
+        };
+
+        mediaRecorder.onstop = () => {
+          stopTimer();
+          recordedBlob = new Blob(audioChunks, { type: "audio/webm" });
+          const audioURL = URL.createObjectURL(recordedBlob);
+          audioPlayer.src = audioURL;
+          audioPlayer.style.display = "block";
+
+          statusEl.textContent = "Recording finished. You can listen or send it to your teacher.";
+
+          playBtn.classList.remove("disabled");
+          playBtn.disabled = false;
+
+          uploadBtn.classList.remove("disabled");
+          uploadBtn.disabled = false;
+
+          recordBtn.classList.remove("disabled");
+          recordBtn.disabled = false;
+        };
+
+        mediaRecorder.start();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Microphone error. Please allow access in your browser settings.";
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        stopBtn.classList.add("disabled");
+        stopBtn.disabled = true;
+        statusEl.textContent = "Stopping...";
+      }
+    }
+
+    // ====== PLAYBACK ======
+    function playRecording() {
+      if (!recordedBlob) {
+        statusEl.textContent = "No recording yet.";
+        return;
+      }
+      audioPlayer.play().catch(err => {
+        console.error(err);
+        statusEl.textContent = "Cannot play audio. Try again.";
+      });
+    }
+
+    // ====== UPLOAD ======
+    async function uploadRecording() {
+      if (!recordedBlob) {
+        statusEl.textContent = "Please record something first.";
+        return;
+      }
+
+      const studentId = studentIdInput.value.trim() || "anonymous";
+      const classCode = classCodeInput.value.trim() || "unknown";
+      const now = new Date();
+      const timestamp = now.toISOString();
+
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const ss = String(now.getSeconds()).padStart(2, "0");
+
+      const filename = `${studentId}_U3_P${currentPrompt}_${y}${m}${d}_${hh}${mm}${ss}.webm`;
+
+      const formData = new FormData();
+      formData.append("audio", recordedBlob, filename);
+      formData.append("filename", filename);
+      formData.append("unit", UNIT_NAME);
+      formData.append("promptNumber", String(currentPrompt));
+      formData.append("studentId", studentId);
+      formData.append("classCode", classCode);
+      formData.append("timestamp", timestamp);
+      formData.append("durationSeconds", String(seconds));
+
+      statusEl.textContent = "Uploading... please wait.";
 
       uploadBtn.classList.add("disabled");
       uploadBtn.disabled = true;
-      feedbackBtn.classList.add("disabled");
-      feedbackBtn.disabled = true;
 
-      startTimer();
-    };
+      try {
+        const res = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          body: formData
+        });
 
-    mediaRecorder.onstop = () => {
-      stopTimer();
-      recordedBlob = new Blob(audioChunks, { type: options.mimeType });
-      const audioURL = URL.createObjectURL(recordedBlob);
-      audioPlayer.src = audioURL;
-      audioPlayer.style.display = "block";
+        if (!res.ok) {
+          throw new Error("Upload failed with status " + res.status);
+        }
 
-      statusEl.textContent = "Recording finished.";
-
-      playBtn.classList.remove("disabled");
-      playBtn.disabled = false;
-
-      uploadBtn.classList.remove("disabled");
-      uploadBtn.disabled = false;
-      feedbackBtn.classList.remove("disabled");
-      feedbackBtn.disabled = false;
-      recordBtn.classList.remove("disabled");
-      recordBtn.disabled = false;
-    };
-
-    mediaRecorder.start();
-  } catch (err) {
-    console.error(err);
-    statusEl.textContent = "Microphone error. Please allow access in your browser settings.";
-  }
-}
-
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state === "recording") {
-    mediaRecorder.stop();
-    mediaRecorder.stream.getTracks().forEach(track => track.stop()); // Stop the stream tracks
-    stopBtn.classList.add("disabled");
-    stopBtn.disabled = true;
-    statusEl.textContent = "Stopping...";
-  }
-}
-
-// ====== PLAYBACK ======
-function playRecording() {
-  if (!recordedBlob) {
-    statusEl.textContent = "No recording yet.";
-    return;
-  }
-  audioPlayer.play().catch(err => {
-    console.error(err);
-    statusEl.textContent = "Cannot play audio. Try again.";
-  });
-}
-
-// ====== DOWNLOAD ======
-async function uploadRecording() {
-  if (!recordedBlob) {
-    statusEl.textContent = "Please record something first.";
-    return;
-  }
-
-  const studentId = studentIdInput.value.trim();
-  const classCode = classCodeInput.value.trim();
-  if (!studentId) {
-    statusEl.textContent = "Please enter your student ID.";
-    return;
-  }
-    if (!classCode) {
-    statusEl.textContent = "Please enter your class code.";
-    return;
-  }
-  const now = new Date();
-
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  const ss = String(now.getSeconds()).padStart(2, "0");
-
-  const filename = `${studentId}_U1_P${currentPrompt}_${y}${m}${d}_${hh}${mm}${ss}.webm`;
-
-  try {
-    const url = URL.createObjectURL(recordedBlob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
-    
-    const googleDriveFolderUrl = "https://drive.google.com/drive/folders/1N_rgdHPwQZlsNw9E3iQAoLiPRdE6M0HO";
-    window.open(googleDriveFolderUrl, '_blank');
-
-    statusEl.textContent = "Downloaded successfully. Please upload the audio file to your teacher's Google Drive.";
-  } catch (err) {
-    console.error(err);
-    statusEl.textContent = "Download error. Please try again later.";
-  }
-}
-
-// ====== ANALYSIS ======
-feedbackBtn.addEventListener("click", analyzeRecording);
-
-async function analyzeRecording() {
-  if (!recordedBlob) {
-    statusEl.textContent = "Please record something first.";
-    return;
-  }
-
-  feedbackText.textContent = "Converting and analyzing your speech...";
-  feedbackBtn.disabled = true;
-  statusEl.textContent = "Processing audio...";
-
-  try {
-    // Always convert to proper WAV format for OpenAI compatibility
-    const wavBlob = await convertToProperWAV(recordedBlob);
-    
-    console.log("Audio prepared for analysis:", {
-      originalType: recordedBlob.type,
-      convertedType: wavBlob.type,
-      originalSize: recordedBlob.size,
-      convertedSize: wavBlob.size
-    });
-
-    const formData = new FormData();
-    formData.append("audio", wavBlob, "audio.wav");
-
-    // Use the quick endpoint for faster processing
-    const response = await fetch("https://speaking-app2025.onrender.com/analyze", {
-      method: "POST",
-      body: formData
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Server response:", errorText);
-      throw new Error(`Server error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.feedback) {
-      feedbackText.textContent = data.feedback;
-      statusEl.textContent = "Analysis complete!";
-    } else if (data.error) {
-      feedbackText.textContent = "Error: " + data.error;
-      statusEl.textContent = "Analysis failed.";
-    } else {
-      feedbackText.textContent = "Unexpected response from server.";
-      statusEl.textContent = "Analysis failed.";
-    }
-
-  } catch (err) {
-    console.error('Analysis error:', err);
-    feedbackText.textContent = "Error analyzing audio: " + err.message;
-    statusEl.textContent = "Analysis error.";
-  }
-
-  feedbackBtn.disabled = false;
-}
-
-// Simple conversion to WAV - more reliable approach
-async function convertToProperWAV(audioBlob) {
-  return new Promise((resolve) => {
-    // For maximum compatibility, create a simple WAV file
-    // This creates a minimal WAV header with the audio data
-    const reader = new FileReader();
-    
-    reader.onload = function() {
-      const arrayBuffer = this.result;
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      
-      audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-        // Convert to WAV with proper headers
-        const wavBuffer = encodeWAV(audioBuffer);
-        const wavBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-        resolve(wavBlob);
-      }, (error) => {
-        console.warn('Audio decoding failed, using fallback conversion:', error);
-        // Fallback: create a WAV blob with minimal conversion
-        const fallbackBlob = createFallbackWAV(audioBlob);
-        resolve(fallbackBlob);
-      });
-    };
-    
-    reader.onerror = () => {
-      // Ultimate fallback
-      const fallbackBlob = createFallbackWAV(audioBlob);
-      resolve(fallbackBlob);
-    };
-    
-    reader.readAsArrayBuffer(audioBlob);
-  });
-}
-
-// Create a proper WAV file from AudioBuffer
-function encodeWAV(audioBuffer) {
-  const numChannels = audioBuffer.numberOfChannels;
-  const sampleRate = audioBuffer.sampleRate;
-  const format = 1; // PCM
-  const bitDepth = 16;
-  
-  const bytesPerSample = bitDepth / 8;
-  const blockAlign = numChannels * bytesPerSample;
-  const byteRate = sampleRate * blockAlign;
-  const dataSize = audioBuffer.length * blockAlign;
-  
-  const buffer = new ArrayBuffer(44 + dataSize);
-  const view = new DataView(buffer);
-  
-  // RIFF identifier
-  writeString(view, 0, 'RIFF');
-  // file length
-  view.setUint32(4, 36 + dataSize, true);
-  // RIFF type
-  writeString(view, 8, 'WAVE');
-  // format chunk identifier
-  writeString(view, 12, 'fmt ');
-  // format chunk length
-  view.setUint32(16, 16, true);
-  // sample format (raw)
-  view.setUint16(20, format, true);
-  // channel count
-  view.setUint16(22, numChannels, true);
-  // sample rate
-  view.setUint32(24, sampleRate, true);
-  // byte rate (sample rate * block align)
-  view.setUint32(28, byteRate, true);
-  // block align (channel count * bytes per sample)
-  view.setUint16(32, blockAlign, true);
-  // bits per sample
-  view.setUint16(34, bitDepth, true);
-  // data chunk identifier
-  writeString(view, 36, 'data');
-  // data chunk length
-  view.setUint32(40, dataSize, true);
-  
-  // write PCM samples
-  const offset = 44;
-  if (bitDepth === 16) {
-    for (let i = 0; i < audioBuffer.length; i++) {
-      for (let channel = 0; channel < numChannels; channel++) {
-        const sample = Math.max(-1, Math.min(1, audioBuffer.getChannelData(channel)[i]));
-        view.setInt16(offset + (i * numChannels + channel) * 2, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+        statusEl.textContent = "Uploaded successfully. Your teacher has received your recording.";
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Upload error. Please try again later.";
+        uploadBtn.classList.remove("disabled");
+        uploadBtn.disabled = false;
       }
     }
-  }
-  
-  return buffer;
-}
 
-// Fallback WAV creation for maximum compatibility
-function createFallbackWAV(originalBlob) {
-  console.log("Using fallback WAV conversion");
-  // Simply rename the blob type to WAV - sometimes this works
-  return new Blob([originalBlob], { 
-    type: 'audio/wav' 
-  });
-}
-
-function writeString(view, offset, string) {
-  for (let i = 0; i < string.length; i++) {
-    view.setUint8(offset + i, string.charCodeAt(i));
-  }
-}
-// ====== EVENT LISTENERS ======
-recordBtn.addEventListener("click", startRecording);
-stopBtn.addEventListener("click", stopRecording);
-playBtn.addEventListener("click", playRecording);
-uploadBtn.addEventListener("click", uploadRecording);
-</script>
-
-
-
-
-
-
-
+    // ====== EVENT LISTENERS ======
+    recordBtn.addEventListener("click", startRecording);
+    stopBtn.addEventListener("click", stopRecording);
+    playBtn.addEventListener("click", playRecording);
+    uploadBtn.addEventListener("click", uploadRecording);
+  </script>
+</body>
+</html>
