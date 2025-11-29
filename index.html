@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Speaking Practice – Unit 1</title>
+  <title>Speaking Practice – Unit 3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -165,8 +165,8 @@
 </head>
 <body>
   <div class="app">
-    <h1>Speaking Practice – Unit 1</h1>
-    <h2>Animals – Endangered species & comparisons</h2>
+    <h1>Speaking Practice – Unit 3</h1>
+    <h2>Transport – Traffic, travel & suggestions</h2>
 
     <div class="meta-row">
       <label>
@@ -186,10 +186,10 @@
     </div>
 
     <div id="promptText" class="prompt-text">
-      Talk about an endangered animal. Say:
-      • where it lives  
-      • why it is at risk  
-      • what people can do to protect it.
+      Compare two ways to travel to college (for example, by bus and by car). Say:
+      • how they are similar
+      • how they are different
+      • which you prefer and why.
     </div>
 
     <div class="timer">
@@ -216,12 +216,12 @@
   <script>
     // ====== CONFIG ======
     const WEBHOOK_URL = "https://hook.eu2.make.com/mgiljprq2kdwb4my635a32iq5xwllgv8";
-    const UNIT_NAME = "Unit 1";
+    const UNIT_NAME = "Unit 3";
 
     const prompts = {
-      1: "Talk about an endangered animal. Say:\n• where it lives\n• why it is at risk\n• what people can do to protect it.",
-      2: "Talk about your favourite animal. Say:\n• what it looks like\n• where it lives\n• what it eats\n• why you like it.",
-      3: "Compare two animals (for example, a lion and a camel). Say:\n• how they are similar\n• how they are different\n• which one you prefer and why."
+      1: "Compare two ways to travel to college (for example, by bus and by car). Say:\n• how they are similar\n• how they are different\n• which you prefer and why.",
+      2: "Make a suggestion to improve transport in your city or near your college. Say:\n• what the problem is\n• your suggestion\n• why it will help.",
+      3: "Use if/when to talk about future transport. Say:\n• what will happen if your city adds more buses or a metro\n• how this will change traffic\n• if there are any disadvantages."
     };
 
     // ====== DOM ELEMENTS ======
@@ -381,7 +381,7 @@
       const mm = String(now.getMinutes()).padStart(2, "0");
       const ss = String(now.getSeconds()).padStart(2, "0");
 
-      const filename = `${studentId}_U1_P${currentPrompt}_${y}${m}${d}_${hh}${mm}${ss}.webm`;
+      const filename = `${studentId}_U3_P${currentPrompt}_${y}${m}${d}_${hh}${mm}${ss}.webm`;
 
       const formData = new FormData();
       formData.append("audio", recordedBlob, filename);
@@ -425,3 +425,5 @@
   </script>
 </body>
 </html>
+
+
