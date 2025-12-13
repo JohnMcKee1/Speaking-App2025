@@ -2,304 +2,480 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>IELTS-style Speaking Practice – Units 1–4</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speaking App 2.5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background:#f5f6fa; color:#222; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 18px; }
+    header { text-align:center; padding: 10px 0 6px; }
+    h1 { margin: 0; font-size: 1.7rem; }
+    .sub { margin: 6px 0 0; color:#555; font-size: .95rem; }
+
+    .card {
+      background:#fff; border:1px solid #e6e8f0; border-radius: 14px;
+      padding: 16px; margin: 12px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,.04);
     }
 
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f3f4f6;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
+    .grid { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    label { display:block; font-weight:600; font-size:.9rem; margin-bottom: 6px; }
+    input, select, textarea {
+      width:100%; padding: 9px 10px; border-radius: 10px;
+      border: 1px solid #cfd3e2; background:#fff; font-size:.95rem;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+
+    .row { display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
+    .pill {
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 7px 10px; border-radius: 999px;
+      border: 1px solid #e6e8f0; background:#fafbff; color:#334;
+      font-size:.85rem;
     }
 
-    .app-wrapper {
-      width: 100%;
-      max-width: 820px;
-      margin: 24px;
-      background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-      padding: 24px 24px 16px;
+    .btns { display:flex; flex-wrap: wrap; gap:8px; margin-top: 10px; }
+    button {
+      border:none; border-radius: 999px; padding: 9px 14px; cursor:pointer;
+      background:#0b57d0; color:#fff; font-size:.95rem;
+    }
+    button:hover:not(:disabled) { opacity:.92; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    button.secondary { background:#6b7280; }
+    button.danger { background:#b42318; }
+    button.good { background:#137333; }
+
+    .box {
+      border: 1px solid #e6e8f0; border-radius: 12px; padding: 12px;
+      background: #fcfdff;
+      white-space: pre-wrap;
+      min-height: 64px;
     }
 
-    h1 {
-      margin: 0 0 4px;
-      font-size: 26px;
-      font-weight: 700;
-      color: #111827;
-    }
+    .twoCol { display:grid; gap:12px; grid-template-columns: 1.1fr .9fr; }
+    @media (max-width: 900px) { .twoCol { grid-template-columns: 1fr; } }
 
-    .subtitle {
-      margin: 0 0 16px;
-      font-size: 16px;
-      color: #4b5563;
-      font-weight: 500;
-    }
+    .hint { color:#555; font-size:.88rem; margin-top: 6px; }
+    .status { color:#444; font-size:.9rem; margin-top: 8px; }
+    audio { width:100%; margin-top: 10px; display:none; }
+    .small { font-size:.85rem; color:#555; }
+    .divider { height:1px; background:#eef0f7; margin: 12px 0; }
 
-    .small-note {
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 16px;
-    }
-
-    .top-row {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      color: #4b5563;
-      margin-bottom: 4px;
-    }
-
-    input[type="text"],
-    select {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      font-size: 14px;
-    }
-
-    input[type="text"]:focus,
-    select:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
-    }
-
-    .prompt-tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .prompt-tab {
-      flex: 1;
-      padding: 10px 0;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      background: #e5e7eb;
-      color: #374151;
-      transition: background 0.15s, color 0.15s, transform 0.1s;
-    }
-
-    .prompt-tab.active {
-      background: #2563eb;
-      color: #ffffff;
-    }
-
-    .prompt-tab:active {
-      transform: translateY(1px);
-    }
-
-    .prompt-box {
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      padding: 14px 14px 10px;
-      min-height: 88px;
-      font-size: 14px;
-      color: #111827;
-      background: #f9fafb;
-      line-height: 1.4;
-      margin-bottom: 12px;
-    }
-
-    .prompt-heading {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .prompt-list {
-      margin: 4px 0 0 16px;
-      padding: 0;
-    }
-
-    .prompt-list li {
-      margin-bottom: 2px;
-    }
-
-    .timer-row {
-      font-family: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
-      font-size: 14px;
-      color: #111827;
-      margin-bottom: 10px;
-    }
-
-    .timer-label {
-      font-weight: 600;
-    }
-
-    .timer-value {
-      margin-left: 4px;
-    }
-
-    .button-row {
-      display: grid;
-      grid-template-columns: 1.2fr 1.2fr;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .button-row-long {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    button.main-btn {
-      width: 100%;
-      border: none;
-      border-radius: 999px;
-      padding: 11px 0;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #ffffff;
-      transition: opacity 0.15s, transform 0.08s;
-    }
-
-    button.main-btn:disabled {
-      opacity: 0.55;
-      cursor: default;
-    }
-
-    button.main-btn:active:not(:disabled) {
-      transform: translateY(1px);
-    }
-
-    #startRecording {
-      background: #ef4444; /* red */
-    }
-
-    #stopRecording {
-      background: #facc15; /* amber */
-      color: #78350f;
-    }
-
-    #playRecording {
-      background: #22c55e; /* green */
-    }
-
-    #downloadAudio {
-      background: #3b82f6; /* blue */
-    }
-
-    #assessRecording {
-      background: #a855f7; /* purple */
-    }
-
-    .status-box {
-      border-radius: 999px;
-      background: #f3f4f6;
-      padding: 8px 14px;
-      font-size: 13px;
-      color: #4b5563;
-      min-height: 32px;
-      display: flex;
-      align-items: center;
-    }
-
-    .footer-note {
-      margin-top: 10px;
-      font-size: 11px;
-      color: #9ca3af;
-      text-align: center;
-    }
-
-    @media (max-width: 720px) {
-      .top-row {
-        grid-template-columns: 1fr;
-      }
-
-      .button-row,
-      .button-row-long {
-        grid-template-columns: 1fr;
-      }
-
-      .app-wrapper {
-        margin: 12px;
-        padding: 18px 16px 12px;
-      }
-    }
+    .suggestList { margin: 0; padding-left: 18px; }
+    .suggestList li { margin: 6px 0; }
   </style>
 </head>
 
 <body>
-  <div class="app-wrapper">
-    <h1>IELTS-style Speaking Practice – Units 1–4</h1>
-    <p class="subtitle">Short Part 1-style questions (about 15–25 seconds each).</p>
-    <p class="small-note">
-      Choose your unit, then answer the three questions in the prompt. Try to speak naturally and clearly.
-    </p>
+  <div class="wrap">
+    <header>
+      <h1>Speaking App 2.5</h1>
+      <div class="sub">Units 1–6 • Speaking Task Type A / B / C • Record • Submit • Feedback</div>
+    </header>
 
-    <div class="top-row">
-      <div>
-        <label for="studentId">Student ID</label>
-        <input type="text" id="studentId" placeholder="e.g. 2412345" />
-      </div>
-      <div>
-        <label for="classCode">Class Code</label>
-        <input type="text" id="classCode" placeholder="e.g. E423" />
-      </div>
-      <div>
-        <label for="unitSelect">Unit (1–4)</label>
-        <select id="unitSelect">
-          <option value="1">Unit 1 – Animals</option>
-          <option value="2">Unit 2 – The Environment</option>
-          <option value="3" selected>Unit 3 – Transport</option>
-          <option value="4">Unit 4 – Customs &amp; Traditions</option>
-        </select>
-      </div>
-    </div>
+    <!-- Student Info -->
+    <section class="card">
+      <div class="grid">
+        <div>
+          <label for="studentName">Student name (optional)</label>
+          <input id="studentName" type="text" placeholder="e.g., Ahmed Ali" />
+          <div class="hint">Optional. Use if you want your teacher to identify you easily.</div>
+        </div>
 
-    <!-- Prompt tabs -->
-    <div class="prompt-tabs">
-      <button id="prompt1Btn" class="prompt-tab active">Prompt 1</button>
-      <button id="prompt2Btn" class="prompt-tab">Prompt 2</button>
-      <button id="prompt3Btn" class="prompt-tab">Prompt 3</button>
-    </div>
+        <div>
+          <label for="studentNumber">Student number (optional)</label>
+          <input id="studentNumber" type="text" inputmode="numeric" placeholder="e.g., 2414062" />
+          <div class="hint">Optional. Often better than a name for privacy.</div>
+        </div>
 
-    <!-- Prompt content (all three; CSS or your existing JS will show/hide as needed) -->
-    <div id="promptBox" class="prompt-box">
-      <!-- Prompt 1: default visible -->
-      <div class="prompt-panel" data-prompt="1">
-        <div class="prompt-heading">Prompt 1 – Animals &amp; Pets (Unit 1)</div>
-        <ol class="prompt-list">
-          <li>Do you have any pets? If yes, what are they like? If not, would you like to have one?</li>
-          <li>What animals are common in your country? Where do people usually see them?</li>
-          <li>Do you think it is better to see animals in zoos or in the wild? Why?</li>
-        </ol>
+        <div>
+          <label for="classCode">Class / Group</label>
+          <input id="classCode" type="text" value="E423" />
+          <div class="hint">This helps your teacher organise submissions.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Controls + Prompt + Suggestions -->
+    <section class="card">
+      <div class="twoCol">
+        <div>
+          <div class="grid">
+            <div>
+              <label for="unitSelect">Unit prompt</label>
+              <select id="unitSelect">
+                <option value="1">Unit 1 – Animals</option>
+                <option value="2">Unit 2 – The Environment</option>
+                <option value="3" selected>Unit 3 – Transport</option>
+                <option value="4">Unit 4 – Customs &amp; Traditions</option>
+                <option value="5">Unit 5 – Health &amp; Fitness</option>
+                <option value="6">Unit 6 – Discovery &amp; Invention</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="taskTypeSelect">Speaking Task Type</label>
+              <select id="taskTypeSelect">
+                <option value="A">Prompt A – Short, personal response</option>
+                <option value="B">Prompt B – Structured response</option>
+                <option value="C">Prompt C – Opinion &amp; discussion</option>
+              </select>
+              <div class="hint" id="taskTypeHint"></div>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button id="getPromptBtn">🎯 Get prompt</button>
+            <button id="showSuggestionsBtn" class="secondary" type="button">📌 Show language help</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row">
+            <span class="pill" id="pillUnit">Unit 3 – Transport</span>
+            <span class="pill" id="pillTask">Prompt A</span>
+            <span class="pill" id="pillTarget">Target time: 30–45s</span>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label>Prompt</label>
+            <div class="box" id="promptBox">Click <b>Get prompt</b> to load a speaking task.</div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label for="notes">Notes (optional)</label>
+            <textarea id="notes" placeholder="Optional: What was easy/difficult? Any words you want your teacher to check?"></textarea>
+          </div>
+        </div>
+
+        <!-- Unit language help -->
+        <aside>
+          <div class="pill" style="justify-content:space-between; width:100%;">
+            <span><b>Unit language help</b></span>
+            <span class="small" id="langHelpLabel">Hidden</span>
+          </div>
+
+          <div id="langHelpPanel" style="display:none; margin-top:10px;">
+            <div class="box" id="langHelpBox"></div>
+            <div class="hint">Tip: You don’t need to use everything. Choose 2–3 items naturally.</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Recorder -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <div class="pill"><b>Recorder</b></div>
+          <div class="hint">Allow microphone access when prompted.</div>
+        </div>
+
+        <div class="row">
+          <div class="pill"><span>⏱ Timer:</span> <b id="timer">00:00</b></div>
+          <div class="pill"><span>Status:</span> <b id="recStatus">Idle</b></div>
+        </div>
       </div>
 
-      <div class="prompt-panel" data-prompt="2" style="display:none;">
-        <div class="prompt-heading">Prompt 2 – The Environment (Unit 2)</div>
-        <ol class="prompt-list">
-          <li>Is the air and water in your city generally clean or dirty? Can you give an example?</li>
-          <li>What small things can people do every day to help the environment?</li>
-          <li>Do you think young people care more about the environment than older people? Why or why not?</li>
-        </ol>
+      <div class="btns">
+        <button id="startBtn">⏺ Start recording</button>
+        <button id="stopBtn" disabled>⏹ Stop</button>
+        <button id="playBtn" class="secondary" disabled>▶ Play</button>
+        <button id="clearBtn" class="danger" disabled>🗑 Clear</button>
       </div>
 
-      <div class="prompt-panel" data-prompt="3" style="display:none;">
-        <div class="prompt-heading">Prompt 3 – Transport &amp; Traditions (Units 3 &amp; 4)</div>
-        <ol class="prompt-list">
-          <li>How do you usually travel to college or work? Is this way of travelling convenient for you?</li>
-          <li>Are
+      <audio id="audio" controls></audio>
+
+      <div class="status" id="recHelp">
+        Click <b>Start recording</b>, answer the prompt, then click <b>Stop</b>.
+      </div>
+    </section>
+
+    <!-- Feedback -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div class="pill"><b>Feedback</b></div>
+        <div class="pill"><span>Recording length:</span> <b id="durationLabel">—</b></div>
+      </div>
+
+      <div class="btns">
+        <button id="feedbackBtn" class="good" disabled>🧠 Get feedback</button>
+      </div>
+
+      <div class="hint">
+        Feedback here is “light guidance” to help you improve. It is not a grade.
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="box" id="feedbackBox">Record something first, then click <b>Get feedback</b>.</div>
+      </div>
+    </section>
+
+    <!-- Submit -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div class="pill"><b>Submit to teacher</b></div>
+        <div class="pill"><span>Connected:</span> <b id="connLabel">Not set</b></div>
+      </div>
+
+      <div class="hint">
+        This sends your audio + details to your teacher’s Google Sheet/Drive via a Web App URL.
+      </div>
+
+      <div class="btns">
+        <button id="sendBtn">📨 Send</button>
+      </div>
+
+      <div class="status" id="sendStatus"></div>
+      <div class="hint small">
+        If sending fails, your microphone recording stays on this page (until you refresh).
+      </div>
+    </section>
+
+  </div>
+
+<script>
+  // =========================================================
+  // CONFIG
+  // =========================================================
+  // Paste your Google Apps Script Web App URL here (the deployed "web app" URL):
+  const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+  // If you want to force at least one identifier, set to true.
+  const REQUIRE_NAME_OR_NUMBER = false;
+
+  // =========================================================
+  // TASK TYPE META
+  // =========================================================
+  const taskTypeMeta = {
+    A: { label: "Prompt A", target: "30–45s", hint: "Short personal answers: habits, preferences, experiences." },
+    B: { label: "Prompt B", target: "1–2 min", hint: "Longer answer with structure: give reasons and an example." },
+    C: { label: "Prompt C", target: "1–2 min", hint: "Opinion/discussion: compare ideas, explain, and justify your view." },
+  };
+
+  // =========================================================
+  // PROMPTS (Units 1–6 • A/B/C)
+  // =========================================================
+  const prompts = {
+    1: { // Animals
+      A: [
+        "Do you like animals? Why or why not?",
+        "Did you have any pets when you were a child?",
+        "Are there any animals that are important symbols in your country?",
+        "What is an animal you are afraid of? Why?"
+      ],
+      B: [
+        "Describe an animal you find interesting. Say what it is, where it lives, what it looks like, and why it interests you.",
+        "Describe a time you saw animals in a special place (zoo, farm, desert, sea, etc.). Say where you went, what you saw, and how you felt."
+      ],
+      C: [
+        "Do you think zoos are good or bad for animals? Why?",
+        "Should people keep exotic animals as pets? Explain your opinion.",
+        "How can people protect endangered animals effectively?"
+      ]
+    },
+
+    2: { // Environment
+      A: [
+        "Is there a park or green area near where you live?",
+        "How often do you spend time outdoors?",
+        "What environmental problems do you notice in your city?",
+        "Do you recycle at home? Why/why not?"
+      ],
+      B: [
+        "Describe a natural place you have visited that you really liked. Say where it is, what it is like, and why it was memorable.",
+        "Describe a time you tried to do something good for the environment. Say what you did, why, and what happened."
+      ],
+      C: [
+        "Who should do more to protect the environment: individuals or governments? Why?",
+        "Is public transport an effective solution for pollution? Explain.",
+        "Do you think young people are more environmentally aware than older people? Why/why not?"
+      ]
+    },
+
+    3: { // Transport
+      A: [
+        "How do you usually travel to college or work?",
+        "What is your favourite type of transport? Why?",
+        "Is traffic a big problem in your city?",
+        "Would you like to learn to drive (or drive more)? Why/why not?"
+      ],
+      B: [
+        "Describe a journey you remember well. Say where you went, how you travelled, who you went with, and why you remember it.",
+        "Describe a form of transport you would like to try. Say what it is, where you would use it, and why it interests you."
+      ],
+      C: [
+        "Should cities reduce car use? Why or why not?",
+        "What are the advantages and disadvantages of public transport?",
+        "How might technology make transport safer in the future?"
+      ]
+    },
+
+    4: { // Customs & Traditions
+      A: [
+        "What is your favourite holiday or festival?",
+        "Do you enjoy traditional food from your country?",
+        "Do young people in your country follow traditional customs?",
+        "Is it important to keep traditions? Why/why not?"
+      ],
+      B: [
+        "Describe an important tradition in your country. Say what it is, when people follow it, and why it matters.",
+        "Describe a celebration you attended that you enjoyed. Say what it was, who was there, and what happened."
+      ],
+      C: [
+        "Do you think traditions are becoming weaker? Why/why not?",
+        "How can countries protect cultural traditions while modernising?",
+        "Does globalisation make cultures more similar? Explain."
+      ]
+    },
+
+    5: { // Health & Fitness
+      A: [
+        "How often do you exercise, and what kind of exercise do you do?",
+        "What do you do to stay healthy?",
+        "How important is sleep for your daily performance?",
+        "Do you prefer exercising alone or with others? Why?"
+      ],
+      B: [
+        "Describe a time when you tried to improve your health or fitness. Say what you did, why, and what changed.",
+        "Describe a sport or activity popular with young adults. Say what it is, where people do it, and why it is popular."
+      ],
+      C: [
+        "Are modern lifestyles becoming more unhealthy? Why/why not?",
+        "What can schools/colleges do to encourage healthy habits?",
+        "Should governments invest more in public sports facilities? Why/why not?"
+      ]
+    },
+
+    6: { // Discovery & Invention
+      A: [
+        "What invention do you use most in daily life?",
+        "Do you like hearing about scientific discoveries? Why/why not?",
+        "Which technology is hardest to live without? Why?",
+        "Have you ever had an idea for an invention? What was it?"
+      ],
+      B: [
+        "Describe an invention that changed people’s lives. Say what it is, how it’s used, and why it matters.",
+        "Describe a scientist/inventor you admire. Say who they are, what they created/discovered, and why you admire them."
+      ],
+      C: [
+        "Does technology always improve life? Why/why not?",
+        "What are advantages and disadvantages of technology in education?",
+        "Will AI create more jobs or reduce jobs in the future? Explain."
+      ]
+    }
+  };
+
+  // =========================================================
+  // UNIT LANGUAGE HELP (Grammar + Vocab suggestions)
+  // Keep these short and practical (student-facing).
+  // =========================================================
+  const unitLanguageHelp = {
+    1: {
+      grammar: [
+        "Comparatives: bigger than / more dangerous than",
+        "Linking: because / but / however",
+        "Modals: should / shouldn’t (for advice about animals)"
+      ],
+      vocab: [
+        "habitat, endangered, predator, prey, species",
+        "domestic, wild, shelter, feed, protect"
+      ],
+      useful: [
+        "In my opinion, …",
+        "I think … because …",
+        "However, …"
+      ]
+    },
+    2: {
+      grammar: [
+        "Cause & effect: because / because of / so / as a result",
+        "Giving examples: for example / such as",
+        "Advantages & disadvantages: one benefit is… / one drawback is…"
+      ],
+      vocab: [
+        "pollution, recycling, waste, climate, resources",
+        "renewable energy, carbon footprint, conservation"
+      ],
+      useful: [
+        "This leads to …",
+        "As a result, …",
+        "For example, …"
+      ]
+    },
+    3: {
+      grammar: [
+        "Suggestions: we could / why don’t we / it might be better to…",
+        "First conditional: If…, will…",
+        "Comparatives & superlatives: faster / the safest"
+      ],
+      vocab: [
+        "commute, traffic jam, route, fare, platform",
+        "efficient, convenient, reliable, crowded"
+      ],
+      useful: [
+        "I usually …",
+        "One advantage is …",
+        "If there’s traffic, …"
+      ]
+    },
+    4: {
+      grammar: [
+        "Adverbs of frequency: usually / sometimes / rarely",
+        "Cause & effect: because / so",
+        "Contrasting: although / however"
+      ],
+      vocab: [
+        "custom, tradition, ceremony, hospitality",
+        "celebrate, respect, values, community"
+      ],
+      useful: [
+        "People usually …",
+        "Although …, …",
+        "It’s important because …"
+      ]
+    },
+    5: {
+      grammar: [
+        "Modals for advice/obligation: should / have to / mustn’t",
+        "Linking: however / on the other hand",
+        "Giving reasons: because / this is why…"
+      ],
+      vocab: [
+        "diet, balanced, nutrients, routine, stamina",
+        "workout, strength, cardio, recovery, sleep"
+      ],
+      useful: [
+        "To stay healthy, I…",
+        "I try to… because…",
+        "On the other hand, …"
+      ]
+    },
+    6: {
+      grammar: [
+        "Passive (for inventions): was invented / is used",
+        "Purpose: to / in order to",
+        "Opinion + support: I believe… because…"
+      ],
+      vocab: [
+        "innovation, device, breakthrough, research, experiment",
+        "invent, discover, develop, improve, impact"
+      ],
+      useful: [
+        "It was invented to…",
+        "Nowadays, it is used for…",
+        "It has changed… by…"
+      ]
+    }
+  };
+
+  // =========================================================
+  // UI ELEMENTS
+  // =========================================================
+  const unitSelect = document.getElementById("unitSelect");
+  const taskTypeSelect = document.getElementById("taskTypeSelect");
+
+  const pillUnit = document.getElementBy
+
+    
