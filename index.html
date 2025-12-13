@@ -476,6 +476,350 @@
   const unitSelect = document.getElementById("unitSelect");
   const taskTypeSelect = document.getElementById("taskTypeSelect");
 
-  const pillUnit = document.getElementBy
+  const pillUnit = document.getElementById("pillUnit");
+  const pillTask = document.getElementById("pillTask");
+  const pillTarget = document.getElementById("pillTarget");
+  const taskTypeHint = document.getElementById("taskTypeHint");
 
-    
+  const promptBox = document.getElementById("promptBox");
+
+  const showSuggestionsBtn = document.getElementById("showSuggestionsBtn");
+  const langHelpPanel = document.getElementById("langHelpPanel");
+  const langHelpBox = document.getElementById("langHelpBox");
+  const langHelpLabel = document.getElementById("langHelpLabel");
+
+  const startBtn = document.getElementById("startBtn");
+  const stopBtn = document.getElementById("stopBtn");
+  const playBtn = document.getElementById("playBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const audio = document.getElementById("audio");
+  const recStatus = document.getElementById("recStatus");
+  const recHelp = document.getElementById("recHelp");
+
+  const timerEl = document.getElementById("timer");
+  const durationLabel = document.getElementById("durationLabel");
+
+  const feedbackBtn = document.getElementById("feedbackBtn");
+  const feedbackBox = document.getElementById("feedbackBox");
+
+  const sendBtn = document.getElementById("sendBtn");
+  const sendStatus = document.getElementById("sendStatus");
+  const connLabel = document.getElementById("connLabel");
+
+  // Set connection label
+  connLabel.textContent = (SCRIPT_URL && SCRIPT_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") ? "Yes" : "Not set";
+
+  // =========================================================
+  // PROMPT LOGIC
+  // =========================================================
+  function unitLabel(u) {
+    return unitSelect.options[unitSelect.selectedIndex].textContent;
+  }
+
+  function updatePills() {
+    const u = unitSelect.value;
+    const t = taskTypeSelect.value;
+    pillUnit.textContent = unitLabel(u);
+    pillTask.textContent = taskTypeMeta[t].label;
+    pillTarget.textContent = "Target time: " + taskTypeMeta[t].target;
+    taskTypeHint.textContent = taskTypeMeta[t].hint;
+  }
+
+  function renderLanguageHelp() {
+    const u = unitSelect.value;
+    const data = unitLanguageHelp[u];
+
+    if (!data) {
+      langHelpBox.textContent = "No language help available for this unit yet.";
+      return;
+    }
+
+    const grammar = data.grammar.map(x => `• ${x}`).join("\n");
+    const vocab = data.vocab.map(x => `• ${x}`).join("\n");
+    const useful = data.useful.map(x => `• ${x}`).join("\n");
+
+    langHelpBox.textContent =
+`Grammar suggestions:
+${grammar}
+
+Vocabulary suggestions:
+${vocab}
+
+Helpful phrases:
+${useful}`;
+  }
+
+  document.getElementById("getPromptBtn").addEventListener("click", () => {
+    const u = unitSelect.value;
+    const t = taskTypeSelect.value;
+
+    const list = (prompts[u] && prompts[u][t]) ? prompts[u][t] : [];
+    if (!list.length) {
+      promptBox.textContent = "No prompt available for this unit/task type yet.";
+      return;
+    }
+    const pick = list[Math.floor(Math.random() * list.length)];
+    promptBox.textContent = pick;
+  });
+
+  unitSelect.addEventListener("change", () => {
+    updatePills();
+    renderLanguageHelp();
+  });
+
+  taskTypeSelect.addEventListener("change", () => {
+    updatePills();
+  });
+
+  showSuggestionsBtn.addEventListener("click", () => {
+    const isOpen = langHelpPanel.style.display !== "none";
+    langHelpPanel.style.display = isOpen ? "none" : "block";
+    langHelpLabel.textContent = isOpen ? "Hidden" : "Visible";
+    showSuggestionsBtn.textContent = isOpen ? "📌 Show language help" : "📌 Hide language help";
+  });
+
+  // Init UI
+  updatePills();
+  renderLanguageHelp();
+
+  // =========================================================
+  // RECORDER + TIMER
+  // =========================================================
+  let mediaRecorder = null;
+  let chunks = [];
+  let audioBlob = null;
+  let stream = null;
+
+  let timerInterval = null;
+  let startTime = 0;
+  let recordedSeconds = 0;
+
+  function fmtTime(totalSeconds) {
+    const m = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const s = String(totalSeconds % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  function startTimer() {
+    startTime = Date.now();
+    timerEl.textContent = "00:00";
+    recordedSeconds = 0;
+    timerInterval = setInterval(() => {
+      recordedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      timerEl.textContent = fmtTime(recordedSeconds);
+    }, 250);
+  }
+
+  function stopTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    durationLabel.textContent = recordedSeconds ? fmtTime(recordedSeconds) : "—";
+  }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      alert("Recording is not supported in this browser.");
+      return;
+    }
+
+    try {
+      // Stop previous stream if any
+      if (stream) stream.getTracks().forEach(t => t.stop());
+
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks = [];
+
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+
+        audioBlob = new Blob(chunks, { type: "audio/webm" });
+        const url = URL.createObjectURL(audioBlob);
+        audio.src = url;
+        audio.style.display = "block";
+
+        playBtn.disabled = false;
+        clearBtn.disabled = false;
+        feedbackBtn.disabled = false;
+
+        recStatus.textContent = "Stopped";
+        recHelp.innerHTML = "Recording saved. You can <b>Play</b>, get <b>Feedback</b>, or <b>Send</b>.";
+      };
+
+      mediaRecorder.start();
+
+      // UI states
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      playBtn.disabled = true;
+      clearBtn.disabled = true;
+      feedbackBtn.disabled = true;
+
+      recStatus.textContent = "Recording";
+      recHelp.textContent = "Recording… speak now.";
+      startTimer();
+
+    } catch (err) {
+      console.error(err);
+      alert("Could not start recording. Check microphone permissions.");
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+      mediaRecorder.stop();
+      stopBtn.disabled = true;
+      startBtn.disabled = false;
+      stopTimer();
+    }
+  }
+
+  function clearRecording() {
+    audioBlob = null;
+    chunks = [];
+    audio.removeAttribute("src");
+    audio.style.display = "none";
+    playBtn.disabled = true;
+    clearBtn.disabled = true;
+    feedbackBtn.disabled = true;
+    durationLabel.textContent = "—";
+    timerEl.textContent = "00:00";
+    recStatus.textContent = "Idle";
+    recHelp.innerHTML = "No recording yet. Click <b>Start recording</b>.";
+    feedbackBox.textContent = "Record something first, then click Get feedback.";
+  }
+
+  startBtn.addEventListener("click", startRecording);
+  stopBtn.addEventListener("click", stopRecording);
+  playBtn.addEventListener("click", () => { if (audio.src) audio.play(); });
+  clearBtn.addEventListener("click", clearRecording);
+
+  // =========================================================
+  // STUDENT-FACING "GET FEEDBACK" (light guidance)
+  // NOTE: This does NOT attempt speech-to-text.
+  // It gives structured advice based on task type + unit language help + time on task.
+  // =========================================================
+  function getFeedbackText() {
+    const u = unitSelect.value;
+    const t = taskTypeSelect.value;
+    const meta = taskTypeMeta[t];
+    const help = unitLanguageHelp[u];
+
+    const time = recordedSeconds || 0;
+
+    let timeComment = "";
+    if (t === "A") {
+      if (time < 20) timeComment = "Your answer was quite short. Try adding 1 reason + 1 example.";
+      else if (time > 70) timeComment = "You spoke for a long time for Task A. Try a shorter, clearer answer.";
+      else timeComment = "Your length is suitable for Task A.";
+    } else {
+      if (time < 45) timeComment = "Your answer was a little short. Try: point → reason → example → short conclusion.";
+      else if (time > 180) timeComment = "You spoke for a long time. Try to stay focused and avoid repetition.";
+      else timeComment = "Your length is suitable for this task type.";
+    }
+
+    const grammarPicks = (help?.grammar || []).slice(0, 2).map(x => `• ${x}`).join("\n");
+    const vocabPicks = (help?.vocab || []).slice(0, 4).map(x => `• ${x}`).join("\n");
+    const phrasePicks = (help?.useful || []).slice(0, 2).map(x => `• ${x}`).join("\n");
+
+    const taskGuide = (t === "A")
+      ? "Aim: answer clearly + add one supporting detail."
+      : (t === "B")
+        ? "Aim: structure your talk: introduction → 2–3 points → example → ending."
+        : "Aim: give an opinion, compare ideas, and justify your view with reasons.";
+
+    return (
+`Task type: ${meta.label}
+Target time: ${meta.target}
+${taskGuide}
+
+Timing check:
+${timeComment}
+
+Try using (from this unit):
+Grammar:
+${grammarPicks || "• (no items set)"}
+
+Vocabulary:
+${vocabPicks || "• (no items set)"}
+
+Helpful phrases:
+${phrasePicks || "• (no items set)"}
+
+Self-check (quick):
+• Did I answer the question directly?
+• Did I give at least ONE reason?
+• Did I give ONE example or detail?
+• Did I use 2–3 unit words naturally?`
+    );
+  }
+
+  feedbackBtn.addEventListener("click", () => {
+    if (!audioBlob) return;
+    feedbackBox.textContent = getFeedbackText();
+  });
+
+  // =========================================================
+  // SEND LOGIC (audio + metadata)
+  // =========================================================
+  sendBtn.addEventListener("click", async () => {
+    const name = document.getElementById("studentName").value.trim();
+    const number = document.getElementById("studentNumber").value.trim();
+    const classCode = document.getElementById("classCode").value.trim();
+    const notes = document.getElementById("notes").value.trim();
+    const unit = unitSelect.value;
+    const taskType = taskTypeSelect.value;
+    const promptText = promptBox.textContent.trim();
+
+    if (REQUIRE_NAME_OR_NUMBER && (!name && !number)) {
+      alert("Please enter either your name or your student number.");
+      return;
+    }
+    if (!classCode) {
+      alert("Please enter your class/group.");
+      return;
+    }
+    if (!promptText || promptText.includes("Get prompt")) {
+      alert("Please click 'Get prompt' first.");
+      return;
+    }
+    if (!audioBlob) {
+      alert("Please record your answer before sending.");
+      return;
+    }
+    if (!SCRIPT_URL || SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE") {
+      alert("The Google Apps Script Web App URL is not set in the code yet.");
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendStatus.textContent = "Sending…";
+
+    try {
+      const fd = new FormData();
+      fd.append("studentName", name);
+      fd.append("studentNumber", number);
+      fd.append("classCode", classCode);
+      fd.append("unit", unit);
+      fd.append("taskType", taskType);
+      fd.append("prompt", promptText);
+      fd.append("notes", notes);
+      fd.append("durationSeconds", String(recordedSeconds || 0));
+      fd.append("audio", audioBlob, `speaking_${classCode}_U${unit}_${taskType}_${Date.now()}.webm`);
+
+      const res = await fetch(SCRIPT_URL, { method: "POST", body: fd });
+      if (!res.ok) throw new Error("Network response not OK");
+
+      sendStatus.textContent = "✅ Sent successfully.";
+    } catch (e) {
+      console.error(e);
+      sendStatus.textContent = "❌ Failed to send. Please try again (or check the Web App URL).";
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
