@@ -61,9 +61,6 @@
     audio { width:100%; margin-top: 10px; display:none; }
     .small { font-size:.85rem; color:#555; }
     .divider { height:1px; background:#eef0f7; margin: 12px 0; }
-
-    .suggestList { margin: 0; padding-left: 18px; }
-    .suggestList li { margin: 6px 0; }
   </style>
 </head>
 
@@ -71,7 +68,7 @@
   <div class="wrap">
     <header>
       <h1>Speaking App 2.5</h1>
-      <div class="sub">Units 1–6 • Speaking Task Type A / B / C • Record • Submit • Feedback</div>
+      <div class="sub">Units 1–6 &amp; 8 • Speaking Task Type A / B / C • Record • Submit • Feedback</div>
     </header>
 
     <!-- Student Info -->
@@ -111,6 +108,7 @@
                 <option value="4">Unit 4 – Customs &amp; Traditions</option>
                 <option value="5">Unit 5 – Health &amp; Fitness</option>
                 <option value="6">Unit 6 – Discovery &amp; Invention</option>
+                <option value="8">Unit 8 – Economics</option>
               </select>
             </div>
 
@@ -255,7 +253,7 @@
   };
 
   // =========================================================
-  // PROMPTS (Units 1–6 • A/B/C)
+  // PROMPTS (Units 1–6 & 8 • A/B/C)
   // =========================================================
   const prompts = {
     1: { // Animals
@@ -364,12 +362,29 @@
         "What are advantages and disadvantages of technology in education?",
         "Will AI create more jobs or reduce jobs in the future? Explain."
       ]
+    },
+
+    8: { // Economics
+      A: [
+        "Do you prefer saving money or spending money? Why?",
+        "What things are becoming more expensive where you live?",
+        "Is it easy for young people to find part-time work in your country? Why/why not?",
+        "How do students usually manage their money each month?"
+      ],
+      B: [
+        "Describe a job you would like to have in the future. Say what the job is, why you want it, and how it could help you in life.",
+        "Describe a time when you saved money for something important. Say what it was, how you saved, and how you felt."
+      ],
+      C: [
+        "Is money more important than job satisfaction? Why or why not?",
+        "Should governments do more to support unemployed young people? Why/why not?",
+        "Do you think prices and living costs are a major problem for young adults today? Explain."
+      ]
     }
   };
 
   // =========================================================
   // UNIT LANGUAGE HELP (Grammar + Vocab suggestions)
-  // Keep these short and practical (student-facing).
   // =========================================================
   const unitLanguageHelp = {
     1: {
@@ -467,6 +482,26 @@
         "Nowadays, it is used for…",
         "It has changed… by…"
       ]
+    },
+    8: {
+      grammar: [
+        "Comparatives: more expensive than / less affordable than",
+        "Cause & effect: because / due to / as a result",
+        "Modals for advice/obligation: should / have to (money habits)",
+        "First conditional: If prices increase, people will…"
+      ],
+      vocab: [
+        "income, salary, wage, budget, expenses",
+        "afford, save, spend, cost, value",
+        "employment, unemployment, workplace, career",
+        "prices, living costs, inflation"
+      ],
+      useful: [
+        "In my opinion, …",
+        "One reason is that …",
+        "As a result, …",
+        "On the other hand, …"
+      ]
     }
   };
 
@@ -512,14 +547,14 @@
   // =========================================================
   // PROMPT LOGIC
   // =========================================================
-  function unitLabel(u) {
+  function unitLabel() {
     return unitSelect.options[unitSelect.selectedIndex].textContent;
   }
 
   function updatePills() {
     const u = unitSelect.value;
     const t = taskTypeSelect.value;
-    pillUnit.textContent = unitLabel(u);
+    pillUnit.textContent = unitLabel();
     pillTask.textContent = taskTypeMeta[t].label;
     pillTarget.textContent = "Target time: " + taskTypeMeta[t].target;
     taskTypeHint.textContent = taskTypeMeta[t].hint;
@@ -623,7 +658,6 @@ ${useful}`;
     }
 
     try {
-      // Stop previous stream if any
       if (stream) stream.getTracks().forEach(t => t.stop());
 
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -650,7 +684,6 @@ ${useful}`;
 
       mediaRecorder.start();
 
-      // UI states
       startBtn.disabled = true;
       stopBtn.disabled = false;
       playBtn.disabled = true;
@@ -698,8 +731,6 @@ ${useful}`;
 
   // =========================================================
   // STUDENT-FACING "GET FEEDBACK" (light guidance)
-  // NOTE: This does NOT attempt speech-to-text.
-  // It gives structured advice based on task type + unit language help + time on task.
   // =========================================================
   function getFeedbackText() {
     const u = unitSelect.value;
